@@ -99,31 +99,31 @@ export default function AdminOverview({ navigate, onLogout }) {
         </h1>
       </div>
 
-      {/* Analytics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-6 border border-[#E5E5E5]/90 dark:border-neutral-800 bg-white/85 dark:bg-black/75 backdrop-blur-md shadow-none rounded-xs space-y-2">
-          <p className="text-xs uppercase tracking-widest text-[#666666] dark:text-neutral-400 font-semibold">
+      {/* Analytics Cards - Side-by-side across all screen sizes */}
+      <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
+        <div className="p-3.5 sm:p-6 border border-[#E5E5E5]/90 dark:border-neutral-800 bg-white/85 dark:bg-black/75 backdrop-blur-md shadow-none rounded-xs space-y-1 sm:space-y-2">
+          <p className="text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest text-[#666666] dark:text-neutral-400 font-semibold truncate">
             Total Views
           </p>
-          <p className="text-3xl font-bold text-black dark:text-white tracking-tight">
+          <p className="text-xl sm:text-3xl font-bold text-black dark:text-white tracking-tight">
             {formatNumber(analytics.totalViews)}
           </p>
         </div>
 
-        <div className="p-6 border border-[#E5E5E5]/90 dark:border-neutral-800 bg-white/85 dark:bg-black/75 backdrop-blur-md shadow-none rounded-xs space-y-2">
-          <p className="text-xs uppercase tracking-widest text-[#666666] dark:text-neutral-400 font-semibold">
+        <div className="p-3.5 sm:p-6 border border-[#E5E5E5]/90 dark:border-neutral-800 bg-white/85 dark:bg-black/75 backdrop-blur-md shadow-none rounded-xs space-y-1 sm:space-y-2">
+          <p className="text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest text-[#666666] dark:text-neutral-400 font-semibold truncate">
             Articles
           </p>
-          <p className="text-3xl font-bold text-black dark:text-white tracking-tight">
+          <p className="text-xl sm:text-3xl font-bold text-black dark:text-white tracking-tight">
             {analytics.totalArticles}
           </p>
         </div>
 
-        <div className="p-6 border border-[#E5E5E5]/90 dark:border-neutral-800 bg-white/85 dark:bg-black/75 backdrop-blur-md shadow-none rounded-xs space-y-2">
-          <p className="text-xs uppercase tracking-widest text-[#666666] dark:text-neutral-400 font-semibold">
+        <div className="p-3.5 sm:p-6 border border-[#E5E5E5]/90 dark:border-neutral-800 bg-white/85 dark:bg-black/75 backdrop-blur-md shadow-none rounded-xs space-y-1 sm:space-y-2">
+          <p className="text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest text-[#666666] dark:text-neutral-400 font-semibold truncate">
             Comments
           </p>
-          <p className="text-3xl font-bold text-black dark:text-white tracking-tight">
+          <p className="text-xl sm:text-3xl font-bold text-black dark:text-white tracking-tight">
             {analytics.totalComments}
           </p>
         </div>

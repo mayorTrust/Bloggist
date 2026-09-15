@@ -733,13 +733,14 @@ router.post('/admin/ai/generate-article', requireAdmin, async (req, res) => {
     // Auto-save into database as draft
     const insertResult = await db.run(
       `INSERT INTO articles (
-        title, slug, author, excerpt, banner_image, content_html, views, status,
+        title, slug, author, category, excerpt, banner_image, content_html, views, status,
         meta_title, meta_description, keywords, aio_summary, seo_score, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, 0, 'draft', ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'draft', ?, ?, ?, ?, ?, ?, ?)`,
       [
         generated.title,
         slug,
         generated.author || 'Trust Agbi',
+        generated.category || 'Essays',
         generated.excerpt,
         generated.banner_image,
         generated.content_html,
