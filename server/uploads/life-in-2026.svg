@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="100%" height="100%">
+  <rect width="1200" height="630" fill="#FFFFFF"/>
+  <rect x="40" y="40" width="1120" height="550" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="2"/>
+  <g stroke="#000000" stroke-width="1.5" fill="none">
+    <line x1="300" y1="315" x2="900" y2="315"/>
+    <ellipse cx="600" cy="315" rx="180" ry="100"/>
+    <ellipse cx="600" cy="315" rx="90" ry="50"/>
+  </g>
+  <text x="600" y="520" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" letter-spacing="4" fill="#666666" text-anchor="middle">BLOGGIST · ANALOG ESSAYS</text>
+</svg>
