@@ -1,19 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Sparkles, Loader2, X, Volume2, Globe, FileText, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { Mic, MicOff, Sparkles, Loader2, X, Volume2, Globe, FileText, CheckCircle2, AlertCircle, ArrowRight, Radio } from 'lucide-react';
 import { api } from '../services/api.js';
 
 export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }) {
-  const [isListening, setIsListening] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [interimTranscript, setInterimTranscript] = useState('');
-  const [speechSupported, setSpeechSupported] = useState(true);
+  const [interimText, setInterimText] = useState('');
   const [tone, setTone] = useState('Editorial, analytical and deeply engaging');
   const [preferredLength, setPreferredLength] = useState('Comprehensive (900 - 1400 words)');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatingStep, setGeneratingStep] = useState(0);
   const [error, setError] = useState('');
 
+  const mediaRecorderRef = useRef(null);
+  const audioStreamRef = useRef(null);
+  const audioChunksRef = useRef([]);
   const recognitionRef = useRef(null);
+  const baseTextRef = useRef('');
+  const speechFinalSegmentsRef = useRef([]);
+  const recordingTimerRef = useRef(null);
   const stepTimerRef = useRef(null);
 
   // Suggested prompts for inspiration
@@ -25,7 +32,7 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
   ];
 
   const GENERATION_STEPS = [
-    'Listening & processing voice instructions...',
+    'Transcribing & analyzing voice prompt...',
     'Conducting real-time web research via Google Search...',
     'Synthesizing verified facts, insights & pull quotes...',
     'Discovering royalty-free imagery and contextual figures...',
@@ -33,105 +40,240 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
     'Saving article draft into database...'
   ];
 
-  // Initialize Speech Recognition if supported in browser
+  // Cleanup on unmount
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
-
-      recognition.onresult = (event) => {
-        let finalStr = '';
-        let interimStr = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const item = event.results[i];
-          if (item.isFinal) {
-            finalStr += item[0].transcript + ' ';
-          } else {
-            interimStr += item[0].transcript;
-          }
-        }
-
-        if (finalStr) {
-          setTranscript((prev) => (prev ? `${prev} ${finalStr}`.trim() : finalStr.trim()));
-        }
-        setInterimTranscript(interimStr);
-      };
-
-      recognition.onerror = (event) => {
-        console.warn('Speech recognition warning:', event.error);
-        if (event.error === 'not-allowed') {
-          setError('Microphone access was denied. Please allow microphone permissions or type your prompt below.');
-        }
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-        setInterimTranscript('');
-      };
-
-      recognitionRef.current = recognition;
-    } else {
-      setSpeechSupported(false);
-    }
-
     return () => {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.abort();
-        } catch (e) {}
-      }
-      if (stepTimerRef.current) {
-        clearInterval(stepTimerRef.current);
-      }
+      cleanupAudioStream();
+      if (stepTimerRef.current) clearInterval(stepTimerRef.current);
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
     };
   }, []);
 
-  const toggleListening = () => {
+  const cleanupAudioStream = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (e) {}
+      recognitionRef.current = null;
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (e) {}
+    }
+    if (audioStreamRef.current) {
+      audioStreamRef.current.getTracks().forEach((track) => track.stop());
+      audioStreamRef.current = null;
+    }
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+  };
+
+  const startRecording = async () => {
     setError('');
-    if (!speechSupported) {
-      setError('Voice recognition is not supported on this browser. You can type your topic instructions directly.');
-      return;
+    cleanupAudioStream();
+    audioChunksRef.current = [];
+    speechFinalSegmentsRef.current = [];
+    setInterimText('');
+
+    const baseText = transcript.trim();
+    baseTextRef.current = baseText;
+
+    let micStreamAcquired = false;
+
+    // 1. Initialize Web Speech API for instant zero-latency live voice typing
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event) => {
+          let currentInterim = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            const res = event.results[i];
+            const text = res[0]?.transcript || '';
+            if (res.isFinal) {
+              speechFinalSegmentsRef.current.push(text.trim());
+            } else {
+              currentInterim += text;
+            }
+          }
+
+          const finalJoined = speechFinalSegmentsRef.current.join(' ').replace(/\s+/g, ' ').trim();
+          const base = baseTextRef.current;
+          const fullFinal = base ? (finalJoined ? `${base} ${finalJoined}` : base) : finalJoined;
+
+          setTranscript(fullFinal);
+          setInterimText(currentInterim.trim());
+        };
+
+        recognition.onerror = (e) => {
+          console.warn('SpeechRecognition live event note:', e.error);
+        };
+
+        recognition.onend = () => {
+          setInterimText('');
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+      } catch (e) {
+        console.warn('SpeechRecognition live start bypassed:', e);
+      }
     }
 
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-    } else {
+    // 2. Start MediaRecorder as robust audio capture
+    if (navigator?.mediaDevices?.getUserMedia) {
       try {
-        recognitionRef.current?.start();
-        setIsListening(true);
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioStreamRef.current = stream;
+        micStreamAcquired = true;
+
+        let mimeType = 'audio/webm';
+        if (typeof MediaRecorder.isTypeSupported === 'function') {
+          if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+            mimeType = 'audio/webm;codecs=opus';
+          } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+            mimeType = 'audio/webm';
+          } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+            mimeType = 'audio/mp4';
+          } else if (MediaRecorder.isTypeSupported('audio/wav')) {
+            mimeType = 'audio/wav';
+          }
+        }
+
+        const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+        mediaRecorderRef.current = recorder;
+
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
+
+        recorder.onstop = async () => {
+          const recordedBlob = new Blob(audioChunksRef.current, {
+            type: recorder.mimeType || mimeType || 'audio/webm'
+          });
+
+          if (audioStreamRef.current) {
+            audioStreamRef.current.getTracks().forEach((track) => track.stop());
+            audioStreamRef.current = null;
+          }
+
+          // If WebSpeech already captured speech, we are done
+          const capturedBySpeech = speechFinalSegmentsRef.current.length > 0;
+          if (!capturedBySpeech && recordedBlob.size > 100) {
+            await processAudioWithGemini(recordedBlob);
+          } else {
+            setIsTranscribing(false);
+            setIsRecording(false);
+          }
+        };
+
+        recorder.start(200);
       } catch (err) {
-        console.warn('Speech recognition start error:', err);
-        setIsListening(false);
+        console.warn('MediaRecorder audio stream request error:', err);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setError('Microphone permission was denied. Please allow microphone access in your browser or type your prompt.');
+          setIsRecording(false);
+          return;
+        }
       }
+    }
+
+    setIsRecording(true);
+    setRecordingSeconds(0);
+
+    recordingTimerRef.current = setInterval(() => {
+      setRecordingSeconds((prev) => prev + 1);
+    }, 1000);
+  };
+
+  const stopRecording = () => {
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
+      recognitionRef.current = null;
+    }
+
+    setInterimText('');
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        if (typeof mediaRecorderRef.current.requestData === 'function' && mediaRecorderRef.current.state === 'recording') {
+          mediaRecorderRef.current.requestData();
+        }
+        mediaRecorderRef.current.stop();
+      } catch (e) {
+        console.warn('Error during mediaRecorder stop:', e);
+        setIsRecording(false);
+        setIsTranscribing(false);
+      }
+    } else {
+      setIsRecording(false);
+      setIsTranscribing(false);
+    }
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
+  const processAudioWithGemini = async (audioBlob) => {
+    setIsTranscribing(true);
+    setError('');
+
+    try {
+      const response = await api.transcribeAudio(audioBlob, audioBlob.type || 'audio/webm');
+      if (response && response.transcript) {
+        const cleanText = response.transcript.trim();
+        setTranscript((prev) => {
+          const trimmedPrev = (prev || '').trim();
+          if (!trimmedPrev) return cleanText;
+          return `${trimmedPrev} ${cleanText}`;
+        });
+      }
+    } catch (err) {
+      console.warn('Gemini audio transcription fallback note:', err);
+    } finally {
+      setIsTranscribing(false);
+      setIsRecording(false);
     }
   };
 
   const handleGenerate = async () => {
-    const promptText = (transcript + ' ' + interimTranscript).trim();
+    const promptText = (transcript + (interimText ? ` ${interimText}` : '')).trim();
     if (!promptText) {
       setError('Please speak or type a topic description for Gemini to research.');
       return;
     }
 
-    // Stop listening
-    if (isListening && recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) {}
-      setIsListening(false);
+    // Stop recording if active
+    if (isRecording) {
+      stopRecording();
     }
 
     setIsGenerating(true);
     setError('');
     setGeneratingStep(0);
 
-    // Simulate animated generation pipeline progress
+    // Animate generation pipeline progress
     stepTimerRef.current = setInterval(() => {
       setGeneratingStep((prev) => (prev < GENERATION_STEPS.length - 1 ? prev + 1 : prev));
     }, 2800);
@@ -163,20 +305,25 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
   };
 
   const handleClose = () => {
-    if (isListening && recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) {}
-    }
+    cleanupAudioStream();
     if (stepTimerRef.current) {
       clearInterval(stepTimerRef.current);
     }
-    setIsListening(false);
     setIsGenerating(false);
+    setIsRecording(false);
+    setIsTranscribing(false);
     setTranscript('');
-    setInterimTranscript('');
+    setInterimText('');
+    baseTextRef.current = '';
+    speechFinalSegmentsRef.current = [];
     setError('');
     onClose();
+  };
+
+  const formatSeconds = (sec) => {
+    const mins = Math.floor(sec / 60);
+    const remainingSecs = sec % 60;
+    return `${mins}:${remainingSecs < 10 ? '0' : ''}${remainingSecs}`;
   };
 
   if (!isOpen) return null;
@@ -197,11 +344,11 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
               <h2 className="text-base font-bold text-black dark:text-white tracking-tight flex items-center gap-2">
                 Gemini AI Voice Researcher
                 <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 bg-black dark:bg-white text-white dark:text-black rounded-full">
-                  Gemini + Search
+                  Gemini Audio + Search
                 </span>
               </h2>
               <p className="text-xs text-[#666666] dark:text-neutral-400">
-                Speak your idea, Gemini will research online, curate images, and draft the article.
+                Record your voice, Gemini transcribes and researches online to draft a complete article.
               </p>
             </div>
           </div>
@@ -266,20 +413,31 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
               {/* Voice Interactive Pod */}
               <div className="p-6 bg-neutral-50 dark:bg-neutral-950/60 border border-[#E5E5E5] dark:border-neutral-800 flex flex-col items-center justify-center text-center space-y-4 rounded-xs">
                 <div className="relative">
-                  {isListening && (
+                  {isRecording && (
                     <div className="absolute -inset-3 rounded-full bg-red-500/20 animate-ping" />
                   )}
                   <button
                     type="button"
-                    onClick={toggleListening}
+                    onClick={toggleRecording}
+                    disabled={isTranscribing}
                     className={`w-16 h-16 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-md ${
-                      isListening
+                      isRecording
                         ? 'bg-red-600 text-white scale-105 ring-4 ring-red-300 dark:ring-red-900'
+                        : isTranscribing
+                        ? 'bg-amber-600 text-white animate-pulse'
                         : 'bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200'
                     }`}
-                    title={isListening ? 'Click to stop speaking' : 'Click to start speaking'}
+                    title={
+                      isRecording
+                        ? 'Click to stop recording & transcribe'
+                        : isTranscribing
+                        ? 'Transcribing with Gemini...'
+                        : 'Click to start recording voice'
+                    }
                   >
-                    {isListening ? (
+                    {isTranscribing ? (
+                      <Loader2 className="w-7 h-7 animate-spin" />
+                    ) : isRecording ? (
                       <MicOff className="w-7 h-7 animate-pulse" />
                     ) : (
                       <Mic className="w-7 h-7" />
@@ -288,18 +446,32 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-sm font-semibold text-black dark:text-white">
-                    {isListening ? 'Listening to your voice...' : 'Click the microphone to speak'}
-                  </p>
+                  <div className="flex items-center justify-center gap-2">
+                    {isRecording && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 text-[11px] font-mono font-bold rounded-full">
+                        <Radio className="w-3 h-3 animate-pulse" />
+                        REC {formatSeconds(recordingSeconds)}
+                      </span>
+                    )}
+                    <p className="text-sm font-semibold text-black dark:text-white">
+                      {isTranscribing
+                        ? 'Transcribing with Gemini AI...'
+                        : isRecording
+                        ? 'Recording your voice...'
+                        : 'Click the microphone to record'}
+                    </p>
+                  </div>
                   <p className="text-xs text-[#666666] dark:text-neutral-400">
-                    {isListening
-                      ? 'Speak clearly about the topic, research questions, or perspective you want explored.'
-                      : 'Or type your topic description directly in the field below.'}
+                    {isTranscribing
+                      ? 'Sending raw audio to Gemini model for clean, verbatim transcription.'
+                      : isRecording
+                      ? 'Speak your article idea, research points, or questions, then click again to transcribe.'
+                      : 'Speak freely — Gemini converts your speech into the prompt without repeats.'}
                   </p>
                 </div>
 
-                {/* Animated sound wave bars when active */}
-                {isListening && (
+                {/* Animated sound wave bars when active recording */}
+                {isRecording && (
                   <div className="flex items-center gap-1 h-6">
                     {[16, 24, 12, 28, 20, 32, 14, 26, 18, 22].map((height, i) => (
                       <div
@@ -323,13 +495,10 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
                     <FileText className="w-3.5 h-3.5" />
                     Voice Transcript & Research Prompt
                   </label>
-                  {(transcript || interimTranscript) && (
+                  {transcript && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setTranscript('');
-                        setInterimTranscript('');
-                      }}
+                      onClick={() => setTranscript('')}
                       className="text-[11px] text-[#666666] dark:text-neutral-400 hover:text-black dark:hover:text-white underline cursor-pointer"
                     >
                       Clear
@@ -337,17 +506,35 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
                   )}
                 </div>
 
-                <div className="relative">
+                <div className="space-y-2">
                   <textarea
                     rows={4}
-                    value={transcript + (interimTranscript ? ` ${interimTranscript}` : '')}
+                    value={transcript}
                     onChange={(e) => setTranscript(e.target.value)}
                     placeholder="E.g., Research the current state of optical neural networks, explore how light is replacing silicon for AI training, contrast speed and energy consumption, and write a thorough editorial essay with analogies and real-world milestones."
                     className="w-full p-3 text-sm bg-white dark:bg-neutral-950 text-black dark:text-white border border-[#E5E5E5] dark:border-neutral-800 focus:border-black dark:focus:border-white focus:outline-hidden placeholder:text-neutral-400 dark:placeholder:text-neutral-600 font-sans leading-relaxed resize-y rounded-xs"
                   />
-                  {isListening && interimTranscript && (
-                    <div className="absolute bottom-2 right-2 text-[10px] bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 px-2 py-0.5 rounded font-mono">
-                      Live Transcribing...
+
+                  {interimText && isRecording && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/80 rounded-xs text-xs">
+                      <span className="relative flex h-2 w-2 shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                      </span>
+                      <span className="font-semibold text-neutral-900 dark:text-neutral-100 shrink-0">Hearing live:</span>
+                      <span className="italic text-neutral-700 dark:text-neutral-300 truncate">
+                        "{interimText}"
+                      </span>
+                    </div>
+                  )}
+
+                  {isTranscribing && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xs text-xs">
+                      <Loader2 className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-spin shrink-0" />
+                      <span className="font-semibold text-amber-900 dark:text-amber-200">Gemini Audio Engine:</span>
+                      <span className="italic text-amber-700 dark:text-amber-300">
+                        Transcribing audio to text...
+                      </span>
                     </div>
                   )}
                 </div>
@@ -433,7 +620,7 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
               <button
                 type="button"
                 onClick={handleGenerate}
-                disabled={!(transcript || interimTranscript).trim()}
+                disabled={!transcript.trim() || isTranscribing || isRecording}
                 className="px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black text-xs font-semibold uppercase tracking-wider hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-none rounded-xs"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-300 dark:text-amber-500" />
@@ -447,3 +634,4 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
     </div>
   );
 }
+

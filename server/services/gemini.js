@@ -370,3 +370,95 @@ Return ONLY a valid JSON object matching this schema:
   };
 }
 
+/**
+ * Transcribe raw user audio with Gemini Audio-to-Text models
+ */
+export async function transcribeAudioWithGemini(audioBase64, mimeType = 'audio/webm') {
+  if (!audioBase64) {
+    throw new Error('No audio data received for transcription.');
+  }
+
+  // Strip data URL prefix if present
+  let cleanBase64 = audioBase64;
+  let detectedMime = mimeType;
+
+  if (audioBase64.includes(';base64,')) {
+    const parts = audioBase64.split(';base64,');
+    cleanBase64 = parts[1];
+    if (parts[0].startsWith('data:')) {
+      detectedMime = parts[0].replace('data:', '');
+    }
+  } else if (audioBase64.includes(',')) {
+    cleanBase64 = audioBase64.split(',')[1];
+  }
+
+  let normalizedMime = (detectedMime || 'audio/webm').split(';')[0].trim().toLowerCase();
+
+  // Normalize common audio mimes for Gemini multi-modal audio decoder
+  if (normalizedMime === 'audio/x-m4a' || normalizedMime === 'audio/m4a') {
+    normalizedMime = 'audio/mp4';
+  } else if (normalizedMime === 'audio/x-wav') {
+    normalizedMime = 'audio/wav';
+  } else if (normalizedMime === 'audio/wave') {
+    normalizedMime = 'audio/wav';
+  } else if (normalizedMime === 'audio/x-webm') {
+    normalizedMime = 'audio/webm';
+  } else if (!normalizedMime.startsWith('audio/')) {
+    normalizedMime = 'audio/webm';
+  }
+
+  const modelsToTry = [
+    'gemini-3.5-transcribe',
+    'gemini-3.8-flash',
+    'gemini-flash-latest',
+    'gemini-3.1-flash-lite'
+  ];
+
+  let lastError = null;
+
+  for (const model of modelsToTry) {
+    try {
+      const ai = getAiClient();
+      const audioPart = {
+        inlineData: {
+          mimeType: normalizedMime,
+          data: cleanBase64
+        }
+      };
+
+      const promptText = 'Transcribe this spoken audio recording accurately and verbatim into clean plain text. Return only the transcript words without any surrounding quotes, timestamps, or commentary.';
+
+      const response = await ai.models.generateContent({
+        model,
+        contents: [
+          audioPart,
+          promptText
+        ]
+      });
+
+      let rawTranscript = response.text || '';
+      if (!rawTranscript && response.candidates && response.candidates[0]?.content?.parts) {
+        for (const part of response.candidates[0].content.parts) {
+          if (part.text) {
+            rawTranscript += part.text;
+          }
+        }
+      }
+
+      const cleaned = (rawTranscript || '').replace(/^["'`]|["'`]$/g, '').trim();
+
+      if (cleaned) {
+        return {
+          transcript: cleaned,
+          modelUsed: model
+        };
+      }
+    } catch (err) {
+      console.warn(`Gemini audio transcription attempt with ${model} failed:`, err?.message || err);
+      lastError = err;
+    }
+  }
+
+  throw new Error(lastError?.message || 'Failed to transcribe audio with Gemini.');
+}
+

@@ -12,6 +12,26 @@ export default function HomePage({ navigate }) {
   const [selectedTopic, setSelectedTopic] = useState('All');
 
   useEffect(() => {
+    // Reset SEO title and canonical URL for homepage
+    document.title = 'Bloggist – Thoughtful Words, Ideas & Modern Publishing';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute(
+        'content',
+        'A minimalist editorial blog platform with dynamic full-screen interactive hero, AI voice-powered article research & creation, SEO & AIO optimization, and custom vector motion backgrounds.'
+      );
+    }
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', 'Bloggist – Thoughtful Words, Ideas & Modern Publishing');
+    const canonicalTag = document.querySelector('link[rel="canonical"]');
+    if (canonicalTag) canonicalTag.setAttribute('href', window.location.origin + '/');
+
+    // Clean up any article-specific JSON-LD schema if present
+    const articleSchema = document.getElementById('article-jsonld-schema');
+    if (articleSchema) articleSchema.remove();
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
     let retryTimer = null;
 

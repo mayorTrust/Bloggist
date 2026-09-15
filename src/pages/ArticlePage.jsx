@@ -66,7 +66,28 @@ export default function ArticlePage({ slug, navigate }) {
         metaDescTag.setAttribute('content', data.meta_description || data.excerpt);
       }
 
-      // Inject JSON-LD Schema for BlogPosting
+      // Update OpenGraph and Twitter meta tags dynamically
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) ogTitle.setAttribute('content', data.meta_title || data.title);
+      const ogDesc = document.querySelector('meta[property="og:description"]');
+      if (ogDesc) ogDesc.setAttribute('content', data.meta_description || data.excerpt);
+      const ogUrl = document.querySelector('meta[property="og:url"]');
+      if (ogUrl) ogUrl.setAttribute('content', window.location.href);
+      if (data.banner_image) {
+        const ogImg = document.querySelector('meta[property="og:image"]');
+        if (ogImg) ogImg.setAttribute('content', data.banner_image);
+      }
+
+      // Canonical link
+      let canonicalTag = document.querySelector('link[rel="canonical"]');
+      if (!canonicalTag) {
+        canonicalTag = document.createElement('link');
+        canonicalTag.setAttribute('rel', 'canonical');
+        document.head.appendChild(canonicalTag);
+      }
+      canonicalTag.setAttribute('href', window.location.href);
+
+      // Inject JSON-LD Schema for BlogPosting & AIO Machine-Readable Direct Answer
       let scriptTag = document.getElementById('article-jsonld-schema');
       if (!scriptTag) {
         scriptTag = document.createElement('script');
@@ -79,24 +100,34 @@ export default function ArticlePage({ slug, navigate }) {
         '@type': 'BlogPosting',
         headline: data.title,
         description: data.meta_description || data.excerpt,
-        image: data.banner_image ? [data.banner_image] : [],
+        abstract: data.aio_summary || data.excerpt || data.meta_description,
+        articleSection: data.category || 'General',
+        keywords: data.keywords || undefined,
+        inLanguage: 'en-US',
+        image: data.banner_image ? [data.banner_image] : [window.location.origin + '/favicon.svg'],
         datePublished: data.created_at,
         dateModified: data.updated_at || data.created_at,
         author: {
           '@type': 'Person',
-          name: data.author || 'Trust Agbi'
+          name: data.author || 'Trust Agbi',
+          url: window.location.origin + '/about'
         },
         publisher: {
           '@type': 'Organization',
           name: 'Bloggist',
+          url: window.location.origin,
           logo: {
             '@type': 'ImageObject',
-            url: window.location.origin + '/icon.svg'
+            url: window.location.origin + '/favicon.svg'
           }
         },
         mainEntityOfPage: {
           '@type': 'WebPage',
           '@id': window.location.href
+        },
+        speakable: {
+          '@type': 'SpeakableSpecification',
+          cssSelector: ['h1', '.aio-summary-block', '#article-rendered-content > p:first-of-type']
         }
       };
       scriptTag.textContent = JSON.stringify(schemaData);

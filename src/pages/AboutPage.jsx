@@ -1,6 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function AboutPage() {
+  useEffect(() => {
+    document.title = 'About Bloggist – Editorial Ethos & Modern Publishing';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute(
+        'content',
+        'Learn about the editorial principles, minimalism, and publishing ethos behind Bloggist.'
+      );
+    }
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', 'About Bloggist – Editorial Ethos & Modern Publishing');
+    const canonicalTag = document.querySelector('link[rel="canonical"]');
+    if (canonicalTag) canonicalTag.setAttribute('href', window.location.origin + '/about');
+  }, []);
+
   return (
     <div className="max-w-2xl mx-auto px-6 py-20 space-y-12 text-black dark:text-white transition-colors">
       <div className="space-y-4">

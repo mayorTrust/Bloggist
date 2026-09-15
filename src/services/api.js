@@ -253,5 +253,31 @@ export const api = {
     return request('/api/admin/ai/optimize-all', {
       method: 'POST'
     });
+  },
+
+  // Transcribe Raw Voice Audio using Gemini Audio-to-Text
+  async transcribeAudio(audioData, mimeType = 'audio/webm') {
+    let base64String = audioData;
+
+    // If a Blob or File is passed, convert to Base64
+    if (audioData instanceof Blob) {
+      base64String = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result;
+          resolve(result);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(audioData);
+      });
+    }
+
+    return request('/api/admin/ai/transcribe-audio', {
+      method: 'POST',
+      body: JSON.stringify({
+        audioData: base64String,
+        mimeType
+      })
+    });
   }
 };

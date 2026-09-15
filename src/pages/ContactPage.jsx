@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/api.js';
 
 export default function ContactPage() {
@@ -6,6 +6,21 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    document.title = 'Contact Bloggist – Letters to the Editor & Inquiries';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute(
+        'content',
+        'Contact the editorial team at Bloggist. Send feedback, essay proposals, or letters to the editor.'
+      );
+    }
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', 'Contact Bloggist – Letters to the Editor & Inquiries');
+    const canonicalTag = document.querySelector('link[rel="canonical"]');
+    if (canonicalTag) canonicalTag.setAttribute('href', window.location.origin + '/contact');
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

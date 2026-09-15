@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none">
+  <defs>
+    <linearGradient id="bloggist-grad-accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18181b" />
+      <stop offset="50%" stop-color="#27272a" />
+      <stop offset="100%" stop-color="#09090b" />
+    </linearGradient>
+
+    <linearGradient id="bloggist-nib-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="60%" stop-color="#ec4899" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+
+    <linearGradient id="bloggist-sheen" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <rect
+    x="1.5"
+    y="1.5"
+    width="33"
+    height="33"
+    rx="8"
+    fill="url(#bloggist-grad-accent)"
+    stroke="#000000"
+    stroke-width="1.2"
+  />
+
+  <path
+    d="M26.5 2.5L34.5 10.5V26.5C34.5 30.5 30.5 34.5 26.5 34.5H9.5C5.5 34.5 1.5 30.5 1.5 26.5V9.5C1.5 5.5 5.5 1.5 9.5 1.5H26.5Z"
+    fill="url(#bloggist-sheen)"
+    opacity="0.25"
+  />
+
+  <rect
+    x="7.5"
+    y="8.5"
+    width="4.2"
+    height="19"
+    rx="1.5"
+    fill="#ffffff"
+  />
+
+  <path
+    d="M11.7 8.5H19C22.3 8.5 24.5 10.3 24.5 13C24.5 15.2 23 16.8 20.8 17.3L11.7 17.3V8.5Z"
+    fill="#ffffff"
+  />
+  <path
+    d="M11.7 10.5H18.5C20.5 10.5 21.8 11.5 21.8 13C21.8 14.5 20.5 15.5 18.5 15.5H11.7V10.5Z"
+    fill="#18181b"
+  />
+
+  <path
+    d="M11.7 16.5H20.5C23.8 16.5 26 18.5 26 21.5C26 24.5 23.5 27.5 19.5 27.5H11.7V16.5Z"
+    fill="#ffffff"
+  />
+  <path
+    d="M11.7 18.7H19C21.2 18.7 22.8 20 22.8 21.8C22.8 23.6 21.2 25.1 19 25.1H11.7V18.7Z"
+    fill="#18181b"
+  />
+
+  <circle
+    cx="27.5"
+    cy="8.5"
+    r="2.2"
+    fill="url(#bloggist-nib-gold)"
+  />
+  <circle
+    cx="27.5"
+    cy="8.5"
+    r="3.5"
+    stroke="url(#bloggist-nib-gold)"
+    stroke-width="0.8"
+    stroke-opacity="0.5"
+  />
+</svg>

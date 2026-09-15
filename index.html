@@ -3,27 +3,84 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Page Titles & Identity -->
     <title>Bloggist – Thoughtful Words, Ideas & Modern Publishing</title>
     <meta name="description" content="A minimalist editorial blog platform with dynamic full-screen interactive hero, AI voice-powered article research & creation, SEO & AIO optimization, and custom vector motion backgrounds." />
+    <meta name="author" content="Trust Agbi" />
+    <meta name="keywords" content="blog, editorial, publishing, technology, design, culture, essay, modern journalism, AI research" />
+    <meta name="application-name" content="Bloggist" />
+
+    <!-- Site Favicon & Touch Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+    <link rel="mask-icon" href="/favicon.svg" color="#000000" />
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+
+    <!-- Search Engine & AI Crawler Directives (SEO & AIO) -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />
+
+    <!-- OpenGraph Social Cards -->
+    <meta property="og:site_name" content="Bloggist" />
+    <meta property="og:type" content="website" />
     <meta property="og:title" content="Bloggist – Thoughtful Words, Ideas & Modern Publishing" />
     <meta property="og:description" content="A minimalist editorial blog platform with dynamic full-screen interactive hero, AI voice-powered article research & creation, SEO & AIO optimization, and custom vector motion backgrounds." />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Bloggist" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="og:image" content="/favicon.svg" />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:alt" content="Bloggist Editorial Logo & Monogram" />
+
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Bloggist – Thoughtful Words, Ideas & Modern Publishing" />
     <meta name="twitter:description" content="A minimalist editorial blog platform with dynamic full-screen interactive hero, AI voice-powered article research & creation, SEO & AIO optimization, and custom vector motion backgrounds." />
+    <meta name="twitter:image" content="/favicon.svg" />
+
+    <!-- Schema.org JSON-LD Structured Graph for Search & AI Engines (Google, Perplexity, Bing) -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Bloggist",
-        "headline": "Thoughtful Words, Ideas & Modern Publishing",
-        "description": "A minimalist editorial blog platform with dynamic full-screen interactive hero, AI voice-powered article research & creation, SEO & AIO optimization, and custom vector motion backgrounds.",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": "/?q={search_term_string}",
-          "query-input": "required name=search_term_string"
-        }
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "/#website",
+            "url": "/",
+            "name": "Bloggist",
+            "headline": "Thoughtful Words, Ideas & Modern Publishing",
+            "description": "A minimalist editorial blog platform with dynamic full-screen interactive hero, AI voice-powered article research & creation, SEO & AIO optimization, and custom vector motion backgrounds.",
+            "publisher": {
+              "@id": "/#organization"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "/?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            },
+            "inLanguage": "en-US"
+          },
+          {
+            "@type": "Organization",
+            "@id": "/#organization",
+            "name": "Bloggist",
+            "url": "/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "/favicon.svg",
+              "caption": "Bloggist Brand Logo"
+            },
+            "publishingPrinciples": "/about",
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "contactType": "editorial",
+              "url": "/contact"
+            }
+          }
+        ]
       }
     </script>
   </head>

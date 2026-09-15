@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { db } from '../database/db.js';
 import { createSessionToken, destroySessionToken, isValidSession, requireAdmin } from '../middleware/auth.js';
-import { generateArticleFromVoice, optimizeArticleForSeoAndAio } from '../services/gemini.js';
+import { generateArticleFromVoice, optimizeArticleForSeoAndAio, transcribeAudioWithGemini } from '../services/gemini.js';
 
 const router = express.Router();
 
@@ -773,6 +773,27 @@ router.post('/admin/ai/generate-article', requireAdmin, async (req, res) => {
     console.error('Error generating AI article from voice:', err);
     return res.status(500).json({
       error: err.message || 'Failed to research and generate article with Gemini.'
+    });
+  }
+});
+
+// POST /api/admin/ai/transcribe-audio - Transcribe raw voice recording with Gemini audio-to-text model
+router.post('/admin/ai/transcribe-audio', requireAdmin, async (req, res) => {
+  try {
+    const { audioData, mimeType } = req.body;
+    if (!audioData) {
+      return res.status(400).json({ error: 'Audio data is required for transcription.' });
+    }
+
+    const result = await transcribeAudioWithGemini(audioData, mimeType);
+    return res.json({
+      transcript: result.transcript,
+      modelUsed: result.modelUsed
+    });
+  } catch (err) {
+    console.error('Error transcribing audio with Gemini:', err);
+    return res.status(500).json({
+      error: err.message || 'Failed to transcribe audio with Gemini.'
     });
   }
 });
