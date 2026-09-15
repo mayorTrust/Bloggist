@@ -132,12 +132,11 @@ export default function BloggistLogo({
       {showWordmark && (
         <div className="flex items-baseline">
           <span
-            className={`font-black text-black uppercase transition-colors tracking-[0.16em] ${currentSize.text} ${wordmarkClassName}`}
+            className={`font-black text-black dark:text-white uppercase transition-colors tracking-[0.16em] ${currentSize.text} ${wordmarkClassName}`}
             style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
           >
             BLOGGIST
           </span>
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-black ml-1 transition-transform group-hover:scale-125" />
         </div>
       )}
     </div>

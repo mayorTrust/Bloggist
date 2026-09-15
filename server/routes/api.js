@@ -124,7 +124,7 @@ router.post('/uploads', requireAdmin, (req, res) => {
 // GET /api/articles - List articles (public or admin)
 router.get('/articles', async (req, res) => {
   try {
-    const { status, search, limit } = req.query;
+    const { status, search, category, limit } = req.query;
     let sql = 'SELECT * FROM articles WHERE 1=1';
     const params = [];
 
@@ -136,10 +136,15 @@ router.get('/articles', async (req, res) => {
       sql += " AND status = 'published'";
     }
 
+    if (category && category !== 'All' && category !== 'all') {
+      sql += ' AND category = ?';
+      params.push(category);
+    }
+
     if (search && search.trim()) {
-      sql += ' AND (title LIKE ? OR excerpt LIKE ?)';
+      sql += ' AND (title LIKE ? OR excerpt LIKE ? OR category LIKE ? OR keywords LIKE ?)';
       const term = `%${search.trim()}%`;
-      params.push(term, term);
+      params.push(term, term, term, term);
     }
 
     sql += ' ORDER BY created_at DESC';
@@ -243,6 +248,7 @@ router.post('/articles', requireAdmin, async (req, res) => {
     const {
       title,
       author,
+      category,
       excerpt,
       banner_image,
       content_html,
@@ -273,6 +279,7 @@ router.post('/articles', requireAdmin, async (req, res) => {
     }
 
     const cleanStatus = status === 'draft' ? 'draft' : 'published';
+    const cleanCategory = category ? category.trim() : 'General';
     const now = new Date().toISOString();
 
     // Auto-generate excerpt if not supplied
@@ -284,13 +291,14 @@ router.post('/articles', requireAdmin, async (req, res) => {
 
     const result = await db.run(
       `INSERT INTO articles (
-        title, slug, author, excerpt, banner_image, content_html, views, status,
+        title, slug, author, category, excerpt, banner_image, content_html, views, status,
         meta_title, meta_description, keywords, aio_summary, seo_score, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         title.trim(),
         slug,
         author.trim(),
+        cleanCategory,
         cleanExcerpt,
         banner_image || '',
         content_html,
@@ -329,6 +337,7 @@ router.put('/articles/:id', requireAdmin, async (req, res) => {
     const {
       title,
       author,
+      category,
       excerpt,
       banner_image,
       content_html,
@@ -372,6 +381,7 @@ router.put('/articles/:id', requireAdmin, async (req, res) => {
         title = ?,
         slug = ?,
         author = ?,
+        category = ?,
         excerpt = ?,
         banner_image = ?,
         content_html = ?,
@@ -387,6 +397,7 @@ router.put('/articles/:id', requireAdmin, async (req, res) => {
         title.trim(),
         slug,
         (author || existing.author).trim(),
+        category !== undefined ? category.trim() : (existing.category || 'General'),
         cleanExcerpt,
         banner_image !== undefined ? banner_image : existing.banner_image,
         content_html !== undefined ? content_html : existing.content_html,

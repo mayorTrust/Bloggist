@@ -87,7 +87,7 @@ export default function AdminPinModal({ isOpen, onClose, onSuccess }) {
       }}
     >
       <div
-        className="w-full max-w-sm bg-white/95 backdrop-blur-md p-8 border border-[#E5E5E5] shadow-2xl relative select-none"
+        className="w-full max-w-sm bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md p-8 border border-[#E5E5E5] dark:border-neutral-800 shadow-2xl relative select-none rounded-xs text-black dark:text-white"
         onKeyDown={handleKeyDown}
         tabIndex={0}
       >
@@ -96,7 +96,7 @@ export default function AdminPinModal({ isOpen, onClose, onSuccess }) {
           id="close-admin-pin-modal-btn"
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-[#666666] hover:text-black transition-colors focus:outline-hidden cursor-pointer"
+          className="absolute top-4 right-4 p-1.5 text-[#666666] dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors focus:outline-hidden cursor-pointer"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
@@ -119,8 +119,8 @@ export default function AdminPinModal({ isOpen, onClose, onSuccess }) {
         />
 
         <div className="text-center space-y-2 mb-8">
-          <h2 className="text-xl font-bold tracking-tight text-black">Admin Access</h2>
-          <p className="text-sm text-[#666666]">Enter PIN</p>
+          <h2 className="text-xl font-bold tracking-tight text-black dark:text-white">Admin Access</h2>
+          <p className="text-sm text-[#666666] dark:text-neutral-400">Enter PIN</p>
         </div>
 
         {/* 4-digit circles display */}
@@ -131,7 +131,9 @@ export default function AdminPinModal({ isOpen, onClose, onSuccess }) {
               <div
                 key={idx}
                 className={`w-3.5 h-3.5 rounded-full transition-all duration-150 ${
-                  isFilled ? 'bg-black scale-110' : 'bg-transparent border border-black/40'
+                  isFilled
+                    ? 'bg-black dark:bg-white scale-110'
+                    : 'bg-transparent border border-black/40 dark:border-white/40'
                 }`}
               />
             );
@@ -140,7 +142,7 @@ export default function AdminPinModal({ isOpen, onClose, onSuccess }) {
 
         {/* Error message */}
         {error && (
-          <p className="text-xs text-center text-red-600 mb-6 font-medium">
+          <p className="text-xs text-center text-red-600 dark:text-red-400 mb-6 font-medium">
             {error}
           </p>
         )}
@@ -154,7 +156,7 @@ export default function AdminPinModal({ isOpen, onClose, onSuccess }) {
               type="button"
               onClick={() => handleDigit(String(num))}
               disabled={loading}
-              className="h-12 flex items-center justify-center text-lg font-medium border border-[#E5E5E5] bg-white hover:bg-[#F5F5F5] active:bg-black active:text-white transition-colors cursor-pointer rounded-xs focus:outline-hidden"
+              className="h-12 flex items-center justify-center text-lg font-medium border border-[#E5E5E5] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-700 active:bg-black active:text-white dark:active:bg-white dark:active:text-black transition-colors cursor-pointer rounded-xs focus:outline-hidden"
             >
               {num}
             </button>
@@ -165,7 +167,7 @@ export default function AdminPinModal({ isOpen, onClose, onSuccess }) {
             type="button"
             onClick={() => handleDigit('0')}
             disabled={loading}
-            className="h-12 flex items-center justify-center text-lg font-medium border border-[#E5E5E5] bg-white hover:bg-[#F5F5F5] active:bg-black active:text-white transition-colors cursor-pointer rounded-xs focus:outline-hidden"
+            className="h-12 flex items-center justify-center text-lg font-medium border border-[#E5E5E5] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-700 active:bg-black active:text-white dark:active:bg-white dark:active:text-black transition-colors cursor-pointer rounded-xs focus:outline-hidden"
           >
             0
           </button>
@@ -174,7 +176,7 @@ export default function AdminPinModal({ isOpen, onClose, onSuccess }) {
             type="button"
             onClick={handleBackspace}
             disabled={loading || pin.length === 0}
-            className="h-12 flex items-center justify-center text-[#666666] border border-[#E5E5E5] bg-white hover:bg-[#F5F5F5] active:bg-black active:text-white transition-colors cursor-pointer rounded-xs focus:outline-hidden"
+            className="h-12 flex items-center justify-center text-[#666666] dark:text-neutral-400 border border-[#E5E5E5] dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-[#F5F5F5] dark:hover:bg-neutral-700 active:bg-black active:text-white dark:active:bg-white dark:active:text-black transition-colors cursor-pointer rounded-xs focus:outline-hidden"
             aria-label="Backspace"
           >
             <Delete className="w-5 h-5" />
@@ -187,7 +189,7 @@ export default function AdminPinModal({ isOpen, onClose, onSuccess }) {
           type="button"
           onClick={() => submitPin(pin)}
           disabled={loading || pin.length !== 4}
-          className="w-full py-3 bg-black text-white text-sm font-medium tracking-wide transition-opacity disabled:opacity-30 hover:opacity-90 cursor-pointer focus:outline-hidden rounded-xs"
+          className="w-full py-3 bg-black dark:bg-white text-white dark:text-black text-sm font-semibold tracking-wide transition-opacity disabled:opacity-30 hover:opacity-90 cursor-pointer focus:outline-hidden rounded-xs"
         >
           {loading ? 'Verifying...' : 'Unlock'}
         </button>

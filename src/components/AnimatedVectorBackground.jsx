@@ -69,21 +69,20 @@ export default function AnimatedVectorBackground({ currentPath = '/', isAdminAut
   return (
     <div
       aria-hidden="true"
-      className="fixed inset-0 pointer-events-none -z-10 overflow-hidden select-none transition-opacity duration-700 ease-in-out"
+      className="fixed inset-0 pointer-events-none -z-10 overflow-hidden select-none transition-colors duration-500 ease-in-out bg-[#fafaf9] dark:bg-[#0a0a0a]"
       style={{
-        backgroundColor: '#fafaf9',
         contain: 'paint layout size'
       }}
     >
       {/* Dynamic Vector Canvas with subtle organic edge smoothing */}
       <svg
-        className="w-full h-full object-cover transition-transform duration-300 ease-out"
+        className="w-full h-full object-cover transition-transform duration-300 ease-out opacity-90 dark:opacity-85"
         viewBox="0 0 1440 900"
         preserveAspectRatio="xMidYMid slice"
         style={{
           transform: `translate3d(${mouseOffset.x}px, ${mouseOffset.y}px, 0) scale(1.04)`,
-          filter: 'blur(1.2px)',
-          WebkitFilter: 'blur(1.2px)'
+          filter: 'blur(0.5px)',
+          WebkitFilter: 'blur(0.5px)'
         }}
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -1078,19 +1077,14 @@ export default function AnimatedVectorBackground({ currentPath = '/', isAdminAut
         )}
       </svg>
 
-      {/* Light Frosted Whitish Overlay (subtly blurred & transparent) */}
+      {/* Frosted Glass Overlay (transparent with gentle blur: soft light in light mode, transparent dark in dark mode) */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.22)',
-          backdropFilter: 'blur(7px)',
-          WebkitBackdropFilter: 'blur(7px)',
-        }}
+        className="absolute inset-0 pointer-events-none bg-white/20 dark:bg-black/35 backdrop-blur-[3px] transition-colors duration-500"
       />
 
       {/* Subtle Fine Grain Mesh for tactile organic vector polish */}
       <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay"
+        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none mix-blend-overlay"
         style={{
           backgroundImage: `radial-gradient(#000000 1px, transparent 1px)`,
           backgroundSize: '24px 24px'

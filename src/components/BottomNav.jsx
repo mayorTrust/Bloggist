@@ -14,7 +14,7 @@ export default function BottomNav({ currentPath, navigate }) {
           id="admin-floating-create-btn"
           type="button"
           onClick={() => navigate('/admin/articles/new')}
-          className="fixed bottom-20 right-6 md:bottom-24 md:right-10 z-30 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-md focus:outline-hidden cursor-pointer"
+          className="fixed bottom-20 right-6 md:bottom-24 md:right-10 z-30 w-14 h-14 bg-black dark:bg-white text-white dark:text-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-md focus:outline-hidden cursor-pointer"
           aria-label="Create Article"
           title="Create New Article"
         >
@@ -25,28 +25,32 @@ export default function BottomNav({ currentPath, navigate }) {
       {/* Admin Bottom Navigation Bar */}
       <nav
         id="admin-bottom-nav"
-        className="fixed bottom-0 left-0 right-0 z-40 bg-white/85 backdrop-blur-md border-t border-[#E5E5E5]/80 h-16 flex items-center justify-around max-w-md mx-auto px-4 shadow-sm"
+        className="fixed bottom-0 left-0 right-0 z-40 bg-white/85 dark:bg-black/85 backdrop-blur-md border-t border-[#E5E5E5]/80 dark:border-neutral-800 h-16 flex items-center justify-around max-w-md mx-auto px-4 shadow-none"
       >
         <button
           id="admin-nav-overview-btn"
           type="button"
           onClick={() => navigate('/admin')}
           className={`flex items-center gap-2 py-2 px-4 transition-colors cursor-pointer focus:outline-hidden text-sm font-medium ${
-            isOverview ? 'text-black font-semibold' : 'text-[#666666] hover:text-black'
+            isOverview
+              ? 'text-black dark:text-white font-semibold'
+              : 'text-[#666666] dark:text-neutral-400 hover:text-black dark:hover:text-white'
           }`}
         >
           <LayoutGrid className={`w-4 h-4 ${isOverview ? 'stroke-[2.2]' : 'stroke-[1.5]'}`} />
           <span>Overview</span>
         </button>
 
-        <div className="w-[1px] h-6 bg-[#E5E5E5]" />
+        <div className="w-[1px] h-6 bg-[#E5E5E5] dark:bg-neutral-800" />
 
         <button
           id="admin-nav-articles-btn"
           type="button"
           onClick={() => navigate('/admin/articles')}
           className={`flex items-center gap-2 py-2 px-4 transition-colors cursor-pointer focus:outline-hidden text-sm font-medium ${
-            isArticles ? 'text-black font-semibold' : 'text-[#666666] hover:text-black'
+            isArticles
+              ? 'text-black dark:text-white font-semibold'
+              : 'text-[#666666] dark:text-neutral-400 hover:text-black dark:hover:text-white'
           }`}
         >
           <FileText className={`w-4 h-4 ${isArticles ? 'stroke-[2.2]' : 'stroke-[1.5]'}`} />

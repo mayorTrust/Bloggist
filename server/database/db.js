@@ -71,6 +71,7 @@ function initSchema() {
       title TEXT NOT NULL,
       slug TEXT NOT NULL UNIQUE,
       author TEXT NOT NULL,
+      category TEXT DEFAULT 'General',
       excerpt TEXT,
       banner_image TEXT,
       content_html TEXT NOT NULL,
@@ -121,6 +122,7 @@ function initSchema() {
 
   // Safe runtime column migration for existing SQLite databases
   const newCols = [
+    { name: 'category', type: "TEXT DEFAULT 'General'" },
     { name: 'meta_title', type: 'TEXT' },
     { name: 'meta_description', type: 'TEXT' },
     { name: 'keywords', type: 'TEXT' },
@@ -135,6 +137,15 @@ function initSchema() {
     }
   }
 
+  // Update existing articles without category
+  try {
+    dbInstance.run(`UPDATE articles SET category = 'Technology' WHERE slug = 'the-future-of-technology' AND (category IS NULL OR category = 'General')`);
+    dbInstance.run(`UPDATE articles SET category = 'AI & Society' WHERE slug = 'understanding-ai' AND (category IS NULL OR category = 'General')`);
+    dbInstance.run(`UPDATE articles SET category = 'Culture' WHERE slug = 'life-in-2026' AND (category IS NULL OR category = 'General')`);
+  } catch (updErr) {
+    // ignore
+  }
+
   saveDatabase();
 }
 
@@ -144,6 +155,7 @@ function seedInitialData() {
       title: "The Future of Technology",
       slug: "the-future-of-technology",
       author: "Trust Agbi",
+      category: "Technology",
       excerpt: "Exploring the silent convergence of distributed intelligence, ambient interfaces, and the return to calm, focused computing.",
       banner_image: "/uploads/future-tech.svg",
       content_html: `<h2>The Return to Calm Computing</h2>
@@ -174,6 +186,7 @@ function seedInitialData() {
       title: "Understanding AI",
       slug: "understanding-ai",
       author: "Trust Agbi",
+      category: "AI & Society",
       excerpt: "Demystifying machine intelligence beyond marketing hype to uncover its genuine utility in everyday creative workflows.",
       banner_image: "/uploads/understanding-ai.svg",
       content_html: `<h2>Beyond the Hype Cycle</h2>
@@ -199,6 +212,7 @@ function seedInitialData() {
       title: "Life in 2026",
       slug: "life-in-2026",
       author: "Trust Agbi",
+      category: "Culture",
       excerpt: "Reflections on modern rhythms, analog rituals, and finding balance in an interconnected world.",
       banner_image: "/uploads/life-in-2026.svg",
       content_html: `<h2>A New Cadence</h2>
@@ -220,9 +234,9 @@ function seedInitialData() {
 
     console.log(`Seeding missing editorial article: ${art.title}`);
     dbInstance.run(
-      `INSERT INTO articles (title, slug, author, excerpt, banner_image, content_html, views, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [art.title, art.slug, art.author, art.excerpt, art.banner_image, art.content_html, art.views, art.status, art.created_at, art.created_at]
+      `INSERT INTO articles (title, slug, author, category, excerpt, banner_image, content_html, views, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [art.title, art.slug, art.author, art.category || 'General', art.excerpt, art.banner_image, art.content_html, art.views, art.status, art.created_at, art.created_at]
     );
 
     const artIdRes = dbInstance.exec("SELECT last_insert_rowid() as id");

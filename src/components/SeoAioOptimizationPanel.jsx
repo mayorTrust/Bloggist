@@ -102,7 +102,7 @@ export default function SeoAioOptimizationPanel({
             className="px-3.5 py-1.5 bg-black text-white text-xs font-semibold uppercase tracking-wider hover:bg-neutral-800 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs"
           >
             <Sparkles className={`w-3.5 h-3.5 text-amber-300 ${isOptimizing ? 'animate-spin' : ''}`} />
-            <span>{isOptimizing ? 'Optimizing...' : 'Optimize with Gemini'}</span>
+            <span>{isOptimizing ? 'Optimizing...' : 'Optimize with Gemini 3.5'}</span>
           </button>
         </div>
       </div>

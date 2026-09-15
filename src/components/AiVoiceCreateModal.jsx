@@ -184,23 +184,23 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
       <div
-        className="w-full max-w-2xl bg-white border border-[#E5E5E5] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-2xl bg-white dark:bg-neutral-900 border border-[#E5E5E5] dark:border-neutral-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] rounded-xs text-black dark:text-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="px-6 py-5 border-b border-[#E5E5E5] flex items-center justify-between bg-neutral-50/80">
+        <div className="px-6 py-5 border-b border-[#E5E5E5] dark:border-neutral-800 flex items-center justify-between bg-neutral-50/80 dark:bg-neutral-900/80">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center shadow-xs">
-              <Sparkles className="w-4 h-4 text-amber-300" />
+            <div className="w-8 h-8 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-xs">
+              <Sparkles className="w-4 h-4 text-amber-300 dark:text-amber-500" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-black tracking-tight flex items-center gap-2">
+              <h2 className="text-base font-bold text-black dark:text-white tracking-tight flex items-center gap-2">
                 Gemini AI Voice Researcher
-                <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 bg-black text-white rounded-full">
-                  Gemini + Google Search
+                <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 bg-black dark:bg-white text-white dark:text-black rounded-full">
+                  Gemini + Search
                 </span>
               </h2>
-              <p className="text-xs text-[#666666]">
+              <p className="text-xs text-[#666666] dark:text-neutral-400">
                 Speak your idea, Gemini will research online, curate images, and draft the article.
               </p>
             </div>
@@ -209,7 +209,7 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
             type="button"
             onClick={handleClose}
             disabled={isGenerating}
-            className="p-1.5 text-[#666666] hover:text-black transition-colors rounded-sm hover:bg-neutral-200/50 cursor-pointer disabled:opacity-40"
+            className="p-1.5 text-[#666666] dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors rounded-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800 cursor-pointer disabled:opacity-40"
           >
             <X className="w-5 h-5" />
           </button>
@@ -221,17 +221,17 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
           {isGenerating ? (
             <div className="py-12 px-4 flex flex-col items-center justify-center text-center space-y-6">
               <div className="relative flex items-center justify-center">
-                <div className="w-20 h-20 rounded-full border-2 border-black/10 animate-ping absolute" />
-                <div className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center shadow-lg relative">
-                  <Sparkles className="w-8 h-8 text-amber-300 animate-spin" style={{ animationDuration: '4s' }} />
+                <div className="w-20 h-20 rounded-full border-2 border-black/10 dark:border-white/10 animate-ping absolute" />
+                <div className="w-16 h-16 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-lg relative">
+                  <Sparkles className="w-8 h-8 text-amber-300 dark:text-amber-500 animate-spin" style={{ animationDuration: '4s' }} />
                 </div>
               </div>
 
               <div className="space-y-2 max-w-md">
-                <h3 className="text-lg font-bold text-black tracking-tight">
+                <h3 className="text-lg font-bold text-black dark:text-white tracking-tight">
                   Gemini is Researching & Writing Your Article
                 </h3>
-                <p className="text-xs text-[#666666] transition-all duration-300">
+                <p className="text-xs text-[#666666] dark:text-neutral-400 transition-all duration-300">
                   {GENERATION_STEPS[generatingStep] || 'Finalizing draft...'}
                 </p>
               </div>
@@ -243,18 +243,18 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
                     key={step}
                     className={`flex items-center gap-2.5 text-xs transition-opacity duration-300 ${
                       idx === generatingStep
-                        ? 'text-black font-semibold'
+                        ? 'text-black dark:text-white font-semibold'
                         : idx < generatingStep
-                        ? 'text-neutral-400 line-through'
-                        : 'text-neutral-300'
+                        ? 'text-neutral-400 dark:text-neutral-500 line-through'
+                        : 'text-neutral-300 dark:text-neutral-600'
                     }`}
                   >
                     {idx < generatingStep ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-black shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-black dark:text-white shrink-0" />
                     ) : idx === generatingStep ? (
-                      <Loader2 className="w-3.5 h-3.5 text-black animate-spin shrink-0" />
+                      <Loader2 className="w-3.5 h-3.5 text-black dark:text-white animate-spin shrink-0" />
                     ) : (
-                      <div className="w-3.5 h-3.5 rounded-full border border-neutral-300 shrink-0" />
+                      <div className="w-3.5 h-3.5 rounded-full border border-neutral-300 dark:border-neutral-600 shrink-0" />
                     )}
                     <span className="truncate">{step}</span>
                   </div>
@@ -264,7 +264,7 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
           ) : (
             <>
               {/* Voice Interactive Pod */}
-              <div className="p-6 bg-neutral-50 border border-[#E5E5E5] flex flex-col items-center justify-center text-center space-y-4 rounded-sm">
+              <div className="p-6 bg-neutral-50 dark:bg-neutral-950/60 border border-[#E5E5E5] dark:border-neutral-800 flex flex-col items-center justify-center text-center space-y-4 rounded-xs">
                 <div className="relative">
                   {isListening && (
                     <div className="absolute -inset-3 rounded-full bg-red-500/20 animate-ping" />
@@ -274,8 +274,8 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
                     onClick={toggleListening}
                     className={`w-16 h-16 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-md ${
                       isListening
-                        ? 'bg-red-600 text-white scale-105 ring-4 ring-red-300'
-                        : 'bg-black text-white hover:bg-neutral-800'
+                        ? 'bg-red-600 text-white scale-105 ring-4 ring-red-300 dark:ring-red-900'
+                        : 'bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200'
                     }`}
                     title={isListening ? 'Click to stop speaking' : 'Click to start speaking'}
                   >
@@ -288,10 +288,10 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-sm font-semibold text-black">
+                  <p className="text-sm font-semibold text-black dark:text-white">
                     {isListening ? 'Listening to your voice...' : 'Click the microphone to speak'}
                   </p>
-                  <p className="text-xs text-[#666666]">
+                  <p className="text-xs text-[#666666] dark:text-neutral-400">
                     {isListening
                       ? 'Speak clearly about the topic, research questions, or perspective you want explored.'
                       : 'Or type your topic description directly in the field below.'}
@@ -319,7 +319,7 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
               {/* Transcript & Prompt Textarea */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold uppercase tracking-wider text-black flex items-center gap-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-black dark:text-white flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5" />
                     Voice Transcript & Research Prompt
                   </label>
@@ -330,7 +330,7 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
                         setTranscript('');
                         setInterimTranscript('');
                       }}
-                      className="text-[11px] text-[#666666] hover:text-black underline cursor-pointer"
+                      className="text-[11px] text-[#666666] dark:text-neutral-400 hover:text-black dark:hover:text-white underline cursor-pointer"
                     >
                       Clear
                     </button>
@@ -343,10 +343,10 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
                     value={transcript + (interimTranscript ? ` ${interimTranscript}` : '')}
                     onChange={(e) => setTranscript(e.target.value)}
                     placeholder="E.g., Research the current state of optical neural networks, explore how light is replacing silicon for AI training, contrast speed and energy consumption, and write a thorough editorial essay with analogies and real-world milestones."
-                    className="w-full p-3 text-sm bg-white border border-[#E5E5E5] focus:border-black focus:outline-hidden placeholder:text-neutral-400 font-sans leading-relaxed resize-y"
+                    className="w-full p-3 text-sm bg-white dark:bg-neutral-950 text-black dark:text-white border border-[#E5E5E5] dark:border-neutral-800 focus:border-black dark:focus:border-white focus:outline-hidden placeholder:text-neutral-400 dark:placeholder:text-neutral-600 font-sans leading-relaxed resize-y rounded-xs"
                   />
                   {isListening && interimTranscript && (
-                    <div className="absolute bottom-2 right-2 text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded font-mono">
+                    <div className="absolute bottom-2 right-2 text-[10px] bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 px-2 py-0.5 rounded font-mono">
                       Live Transcribing...
                     </div>
                   )}
@@ -355,7 +355,7 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
 
               {/* Quick Inspiration Pills */}
               <div className="space-y-1.5">
-                <p className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
+                <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                   Quick Topic Suggestions
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -364,7 +364,7 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
                       key={idx}
                       type="button"
                       onClick={() => setTranscript(s)}
-                      className="text-xs text-left px-2.5 py-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-sm transition-colors cursor-pointer"
+                      className="text-xs text-left px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xs transition-colors cursor-pointer"
                     >
                       + {s.slice(0, 48)}...
                     </button>
@@ -373,13 +373,13 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
               </div>
 
               {/* Editorial Options: Tone & Length */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[#E5E5E5]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[#E5E5E5] dark:border-neutral-800">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-black">Editorial Tone</label>
+                  <label className="text-xs font-semibold text-black dark:text-white">Editorial Tone</label>
                   <select
                     value={tone}
                     onChange={(e) => setTone(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-white border border-[#E5E5E5] focus:border-black focus:outline-hidden cursor-pointer"
+                    className="w-full px-3 py-2 text-xs bg-white dark:bg-neutral-950 text-black dark:text-white border border-[#E5E5E5] dark:border-neutral-800 focus:border-black dark:focus:border-white focus:outline-hidden cursor-pointer rounded-xs"
                   >
                     <option value="Editorial, analytical and deeply engaging">Editorial & Analytical</option>
                     <option value="Philosophical, thoughtful and calm">Philosophical & Reflective</option>
@@ -390,11 +390,11 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-black">Target Depth</label>
+                  <label className="text-xs font-semibold text-black dark:text-white">Target Depth</label>
                   <select
                     value={preferredLength}
                     onChange={(e) => setPreferredLength(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-white border border-[#E5E5E5] focus:border-black focus:outline-hidden cursor-pointer"
+                    className="w-full px-3 py-2 text-xs bg-white dark:bg-neutral-950 text-black dark:text-white border border-[#E5E5E5] dark:border-neutral-800 focus:border-black dark:focus:border-white focus:outline-hidden cursor-pointer rounded-xs"
                   >
                     <option value="Comprehensive (1000 - 1500 words)">Comprehensive (1,000 - 1,500 words)</option>
                     <option value="Standard Editorial (800 - 1000 words)">Standard (800 - 1,000 words)</option>
@@ -405,7 +405,7 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
 
               {/* Error Banner */}
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs flex items-center gap-2 rounded-xs">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -416,9 +416,9 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
 
         {/* Modal Footer */}
         {!isGenerating && (
-          <div className="px-6 py-4 border-t border-[#E5E5E5] flex items-center justify-between bg-neutral-50/80">
-            <div className="flex items-center gap-2 text-xs text-[#666666]">
-              <Globe className="w-3.5 h-3.5 text-neutral-500" />
+          <div className="px-6 py-4 border-t border-[#E5E5E5] dark:border-neutral-800 flex items-center justify-between bg-neutral-50/80 dark:bg-neutral-950/80">
+            <div className="flex items-center gap-2 text-xs text-[#666666] dark:text-neutral-400">
+              <Globe className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
               <span>Includes Google Search grounding & online imagery</span>
             </div>
 
@@ -426,7 +426,7 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-4 py-2 text-xs text-[#666666] hover:text-black transition-colors cursor-pointer"
+                className="px-4 py-2 text-xs text-[#666666] dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -434,9 +434,9 @@ export default function AiVoiceCreateModal({ isOpen, onClose, onArticleCreated }
                 type="button"
                 onClick={handleGenerate}
                 disabled={!(transcript || interimTranscript).trim()}
-                className="px-5 py-2.5 bg-black text-white text-xs font-semibold uppercase tracking-wider hover:bg-neutral-800 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+                className="px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black text-xs font-semibold uppercase tracking-wider hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-none rounded-xs"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <Sparkles className="w-3.5 h-3.5 text-amber-300 dark:text-amber-500" />
                 <span>Research & Create Draft</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>

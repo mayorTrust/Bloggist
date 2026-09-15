@@ -32,6 +32,7 @@ import SeoAioOptimizationPanel from '../../components/SeoAioOptimizationPanel.js
 export default function AdminArticleEditor({ articleId, navigate }) {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('Trust Agbi');
+  const [category, setCategory] = useState('Technology');
   const [bannerImage, setBannerImage] = useState('');
   const [status, setStatus] = useState('published'); // 'draft' or 'published'
   const [loading, setLoading] = useState(false);
@@ -41,6 +42,8 @@ export default function AdminArticleEditor({ articleId, navigate }) {
   const [inlineUploading, setInlineUploading] = useState(false);
   const [bannerUrlInput, setBannerUrlInput] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
+
+  const CATEGORY_PRESETS = ['Technology', 'Design', 'Culture', 'Essays', 'AI & Society', 'General'];
 
   // AI Voice Creation modal state
   const [aiVoiceModalOpen, setAiVoiceModalOpen] = useState(false);
@@ -89,6 +92,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
       const data = await api.getArticle(id);
       setTitle(data.title || '');
       setAuthor(data.author || 'Trust Agbi');
+      setCategory(data.category || 'Technology');
       setBannerImage(data.banner_image || '');
       setStatus(data.status || 'published');
       setSeoData({
@@ -291,6 +295,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
     const payload = {
       title: title.trim(),
       author: author.trim(),
+      category: category.trim() || 'Technology',
       banner_image: bannerImage,
       content_html: contentHtml,
       status: targetStatus,
@@ -318,20 +323,20 @@ export default function AdminArticleEditor({ articleId, navigate }) {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto px-6 py-24 text-center">
-        <p className="text-sm text-[#666666]">Loading article...</p>
+        <p className="text-sm text-[#666666] dark:text-neutral-400">Loading article...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 pt-6 pb-28 space-y-8">
+    <div className="max-w-3xl mx-auto px-6 pt-6 pb-28 space-y-8 text-black dark:text-white">
       {/* Top Header: Back button & Save/Publish actions */}
-      <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-4">
+      <div className="flex items-center justify-between border-b border-[#E5E5E5] dark:border-neutral-800 pb-4">
         <button
           id="editor-back-btn"
           type="button"
           onClick={() => navigate('/admin/articles')}
-          className="inline-flex items-center gap-2 text-sm text-[#666666] hover:text-black transition-colors cursor-pointer focus:outline-hidden"
+          className="inline-flex items-center gap-2 text-sm text-[#666666] dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer focus:outline-hidden"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Articles</span>
@@ -343,7 +348,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             id="editor-ai-voice-btn"
             type="button"
             onClick={() => setAiVoiceModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white text-xs font-semibold hover:bg-black transition-colors cursor-pointer rounded-xs shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 dark:bg-neutral-800 text-white text-xs font-semibold hover:bg-black dark:hover:bg-neutral-700 transition-colors cursor-pointer rounded-xs shadow-none border border-neutral-700/50"
             title="Tell Gemini to research and draft an article"
           >
             <Mic className="w-3.5 h-3.5 text-red-400" />
@@ -356,7 +361,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             type="button"
             disabled={saving}
             onClick={() => handleSave('draft')}
-            className="px-3.5 py-1.5 text-xs text-[#666666] hover:text-black border border-[#E5E5E5] hover:border-black bg-white transition-colors cursor-pointer disabled:opacity-50"
+            className="px-3.5 py-1.5 text-xs text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white border border-[#E5E5E5] dark:border-neutral-700 hover:border-black dark:hover:border-neutral-500 bg-white dark:bg-neutral-900 transition-colors cursor-pointer disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save Draft'}
           </button>
@@ -365,7 +370,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             type="button"
             disabled={saving}
             onClick={() => handleSave('published')}
-            className="px-4 py-1.5 text-xs bg-black text-white hover:opacity-90 transition-opacity font-medium cursor-pointer disabled:opacity-50"
+            className="px-4 py-1.5 text-xs bg-black dark:bg-white text-white dark:text-black hover:opacity-90 transition-opacity font-medium cursor-pointer disabled:opacity-50"
           >
             {saving ? 'Publishing...' : 'Publish'}
           </button>
@@ -373,7 +378,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
       </div>
 
       {error && (
-        <div className="p-3 text-xs text-red-600 bg-red-50 border border-red-200">
+        <div className="p-3 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xs">
           {error}
         </div>
       )}
@@ -381,21 +386,21 @@ export default function AdminArticleEditor({ articleId, navigate }) {
       {/* 1. Banner Image Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="block text-xs font-semibold uppercase tracking-wider text-[#666666]">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-[#666666] dark:text-neutral-400">
             Banner Image
           </label>
           <div className="flex items-center gap-3 text-xs">
             <button
               type="button"
               onClick={() => setShowUrlInput(!showUrlInput)}
-              className="text-[#666666] hover:text-black underline cursor-pointer"
+              className="text-[#666666] dark:text-neutral-400 hover:text-black dark:hover:text-white underline cursor-pointer"
             >
               {showUrlInput ? 'Hide URL input' : 'Paste Image URL'}
             </button>
             <button
               type="button"
               onClick={() => bannerFileInputRef.current?.click()}
-              className="text-black font-semibold hover:underline cursor-pointer"
+              className="text-black dark:text-white font-semibold hover:underline cursor-pointer"
             >
               Upload File
             </button>
@@ -404,13 +409,13 @@ export default function AdminArticleEditor({ articleId, navigate }) {
 
         {/* Optional direct URL input */}
         {showUrlInput && (
-          <div className="flex items-center gap-2 p-2 bg-neutral-50 border border-[#E5E5E5] rounded-xs">
+          <div className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-900 border border-[#E5E5E5] dark:border-neutral-800 rounded-xs">
             <input
               type="url"
               value={bannerUrlInput}
               onChange={(e) => setBannerUrlInput(e.target.value)}
               placeholder="https://images.unsplash.com/photo-..."
-              className="flex-1 px-2.5 py-1.5 text-xs bg-white border border-[#E5E5E5] focus:border-black focus:outline-hidden"
+              className="flex-1 px-2.5 py-1.5 text-xs bg-white dark:bg-neutral-950 text-black dark:text-white border border-[#E5E5E5] dark:border-neutral-800 focus:border-black dark:focus:border-neutral-400 focus:outline-hidden"
             />
             <button
               type="button"
@@ -421,7 +426,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
                   setShowUrlInput(false);
                 }
               }}
-              className="px-3 py-1.5 text-xs bg-black text-white hover:bg-neutral-800 cursor-pointer font-medium"
+              className="px-3 py-1.5 text-xs bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 cursor-pointer font-medium"
             >
               Apply
             </button>
@@ -429,7 +434,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
         )}
 
         {bannerImage ? (
-          <div className="relative aspect-[21/9] sm:aspect-[2/1] overflow-hidden bg-[#F5F5F5] border border-[#E5E5E5] group rounded-xs">
+          <div className="relative aspect-[21/9] sm:aspect-[2/1] overflow-hidden bg-[#F5F5F5] dark:bg-neutral-900 border border-[#E5E5E5] dark:border-neutral-800 group rounded-xs">
             <img
               src={bannerImage}
               alt="Article Banner Preview"
@@ -444,7 +449,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
               <button
                 type="button"
                 onClick={() => bannerFileInputRef.current?.click()}
-                className="px-2.5 py-1 text-xs bg-white text-black border border-[#E5E5E5] shadow-xs hover:bg-[#F5F5F5] cursor-pointer"
+                className="px-2.5 py-1 text-xs bg-white dark:bg-neutral-900 text-black dark:text-white border border-[#E5E5E5] dark:border-neutral-700 shadow-none hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 cursor-pointer"
                 title="Replace Banner"
               >
                 Replace
@@ -452,7 +457,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
               <button
                 type="button"
                 onClick={() => setBannerImage('')}
-                className="p-1 bg-white text-black border border-[#E5E5E5] shadow-xs hover:text-red-600 cursor-pointer"
+                className="p-1 bg-white dark:bg-neutral-900 text-black dark:text-white border border-[#E5E5E5] dark:border-neutral-700 shadow-none hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
                 title="Remove Banner"
               >
                 <X className="w-4 h-4" />
@@ -463,13 +468,13 @@ export default function AdminArticleEditor({ articleId, navigate }) {
           <div
             id="add-banner-image-dropzone"
             onClick={() => bannerFileInputRef.current?.click()}
-            className="aspect-[21/9] sm:aspect-[2/1] border-2 border-dashed border-[#E5E5E5] hover:border-black flex flex-col items-center justify-center cursor-pointer transition-colors bg-[#F5F5F5]/50 group rounded-xs"
+            className="aspect-[21/9] sm:aspect-[2/1] border-2 border-dashed border-[#E5E5E5] dark:border-neutral-800 hover:border-black dark:hover:border-neutral-500 flex flex-col items-center justify-center cursor-pointer transition-colors bg-[#F5F5F5]/50 dark:bg-neutral-900/30 group rounded-xs"
           >
-            <Upload className="w-6 h-6 text-[#666666] group-hover:text-black mb-2 transition-colors" />
-            <span className="text-sm font-medium text-black">
+            <Upload className="w-6 h-6 text-[#666666] dark:text-neutral-400 group-hover:text-black dark:group-hover:text-white mb-2 transition-colors" />
+            <span className="text-sm font-medium text-black dark:text-white">
               {bannerUploading ? 'Uploading banner...' : '＋ Add Banner Image'}
             </span>
-            <span className="text-xs text-[#666666] mt-1">
+            <span className="text-xs text-[#666666] dark:text-neutral-400 mt-1">
               Upload file or click "Paste Image URL" above
             </span>
           </div>
@@ -484,37 +489,73 @@ export default function AdminArticleEditor({ articleId, navigate }) {
         />
       </div>
 
-      {/* 2. Author Field */}
-      <div className="pt-2">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-[#666666] mb-1">
-          Author
-        </label>
-        <input
-          id="article-author-input"
-          type="text"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          placeholder="Author name"
-          className="w-full text-sm font-medium text-black border-b border-[#E5E5E5] py-1.5 focus:border-black focus:outline-hidden bg-transparent"
-        />
+      {/* 2. Author and Category Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+        {/* Author Field */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-[#666666] dark:text-neutral-400 mb-1">
+            Author
+          </label>
+          <input
+            id="article-author-input"
+            type="text"
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+            placeholder="Author name"
+            className="w-full text-sm font-medium text-black dark:text-white border-b border-[#E5E5E5] dark:border-neutral-800 py-1.5 focus:border-black dark:focus:border-white focus:outline-hidden bg-transparent"
+          />
+        </div>
+
+        {/* Category Field & Quick Presets */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-[#666666] dark:text-neutral-400 mb-1">
+            Category
+          </label>
+          <input
+            id="article-category-input"
+            type="text"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            placeholder="e.g. Technology, Design, Culture, AI & Society..."
+            className="w-full text-sm font-medium text-black dark:text-white border-b border-[#E5E5E5] dark:border-neutral-800 py-1.5 focus:border-black dark:focus:border-white focus:outline-hidden bg-transparent"
+          />
+
+          {/* Quick Category Chips */}
+          <div className="flex flex-wrap gap-1 mt-2">
+            {CATEGORY_PRESETS.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setCategory(cat)}
+                className={`text-[11px] px-2 py-0.5 rounded-full transition-colors cursor-pointer ${
+                  category.toLowerCase() === cat.toLowerCase()
+                    ? 'bg-black dark:bg-white text-white dark:text-black font-semibold'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* 3. Article Title Input (Looks like real headline) */}
-      <div className="pt-4">
+      <div className="pt-2">
         <input
           id="article-title-input"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Article title..."
-          className="w-full text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-black border-none focus:outline-hidden bg-transparent placeholder:text-[#666666]/40 leading-tight"
+          className="w-full text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-black dark:text-white border-none focus:outline-hidden bg-transparent placeholder:text-[#666666]/40 dark:placeholder:text-neutral-600 leading-tight"
         />
       </div>
 
       {/* 4. Compact WYSIWYG Toolbar */}
       <div
         id="editor-compact-toolbar"
-        className="sticky top-16 z-20 bg-white/85 backdrop-blur-md border border-[#E5E5E5]/90 p-1.5 flex items-center gap-1 overflow-x-auto shadow-sm"
+        className="sticky top-16 z-20 bg-white/85 dark:bg-neutral-900/90 backdrop-blur-md border border-[#E5E5E5]/90 dark:border-neutral-800 p-1.5 flex items-center gap-1 overflow-x-auto shadow-none rounded-xs"
       >
         {/* Bold */}
         <button
@@ -524,7 +565,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             executeCommand('bold');
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Bold"
           aria-label="Bold"
         >
@@ -539,7 +580,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             executeCommand('italic');
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Italic"
           aria-label="Italic"
         >
@@ -554,14 +595,14 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             executeCommand('underline');
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Underline"
           aria-label="Underline"
         >
           <Underline className="w-4 h-4" />
         </button>
 
-        <div className="w-[1px] h-5 bg-[#E5E5E5] mx-1 shrink-0" />
+        <div className="w-[1px] h-5 bg-[#E5E5E5] dark:bg-neutral-800 mx-1 shrink-0" />
 
         {/* Text Size Menu */}
         <div className="relative">
@@ -569,31 +610,31 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             id="format-text-size-btn"
             type="button"
             onClick={() => setShowFontSizeMenu(!showFontSizeMenu)}
-            className="px-2 py-1 text-xs font-semibold text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+            className="px-2 py-1 text-xs font-semibold text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
             title="Text Size"
           >
             Size
           </button>
           {showFontSizeMenu && (
-            <div className="absolute top-full left-0 mt-1 w-28 bg-white border border-[#E5E5E5] shadow-md py-1 z-30">
+            <div className="absolute top-full left-0 mt-1 w-28 bg-white dark:bg-neutral-900 border border-[#E5E5E5] dark:border-neutral-800 shadow-md py-1 z-30">
               <button
                 type="button"
                 onClick={() => applyFontSize('small')}
-                className="w-full text-left px-3 py-1.5 text-xs hover:bg-[#F5F5F5] cursor-pointer"
+                className="w-full text-left px-3 py-1.5 text-xs hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 text-black dark:text-white cursor-pointer"
               >
                 Small
               </button>
               <button
                 type="button"
                 onClick={() => applyFontSize('normal')}
-                className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#F5F5F5] cursor-pointer"
+                className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 text-black dark:text-white cursor-pointer"
               >
                 Normal
               </button>
               <button
                 type="button"
                 onClick={() => applyFontSize('large')}
-                className="w-full text-left px-3 py-1.5 text-base font-semibold hover:bg-[#F5F5F5] cursor-pointer"
+                className="w-full text-left px-3 py-1.5 text-base font-semibold hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 text-black dark:text-white cursor-pointer"
               >
                 Large
               </button>
@@ -608,7 +649,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             applyTextColor('#000000');
           }}
-          className="w-4 h-4 rounded-full bg-black border border-[#E5E5E5] cursor-pointer shrink-0 ml-1"
+          className="w-4 h-4 rounded-full bg-black border border-[#E5E5E5] dark:border-neutral-700 cursor-pointer shrink-0 ml-1"
           title="Color: Black"
         />
         <button
@@ -617,7 +658,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             applyTextColor('#444444');
           }}
-          className="w-4 h-4 rounded-full bg-[#444444] border border-[#E5E5E5] cursor-pointer shrink-0"
+          className="w-4 h-4 rounded-full bg-[#444444] border border-[#E5E5E5] dark:border-neutral-700 cursor-pointer shrink-0"
           title="Color: Dark Gray"
         />
         <button
@@ -626,11 +667,11 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             applyTextColor('#888888');
           }}
-          className="w-4 h-4 rounded-full bg-[#888888] border border-[#E5E5E5] cursor-pointer shrink-0"
+          className="w-4 h-4 rounded-full bg-[#888888] border border-[#E5E5E5] dark:border-neutral-700 cursor-pointer shrink-0"
           title="Color: Gray"
         />
 
-        <div className="w-[1px] h-5 bg-[#E5E5E5] mx-1 shrink-0" />
+        <div className="w-[1px] h-5 bg-[#E5E5E5] dark:bg-neutral-800 mx-1 shrink-0" />
 
         {/* Headings */}
         <button
@@ -640,7 +681,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             applyHeading('h2');
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Heading 2"
           aria-label="Heading 2"
         >
@@ -654,7 +695,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             applyHeading('h3');
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Heading 3"
           aria-label="Heading 3"
         >
@@ -668,14 +709,14 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             applyHeading('h4');
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Heading 4"
           aria-label="Heading 4"
         >
           <Heading4 className="w-4 h-4" />
         </button>
 
-        <div className="w-[1px] h-5 bg-[#E5E5E5] mx-1 shrink-0" />
+        <div className="w-[1px] h-5 bg-[#E5E5E5] dark:bg-neutral-800 mx-1 shrink-0" />
 
         {/* Alignments */}
         <button
@@ -684,7 +725,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             executeCommand('justifyLeft');
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Align Left"
         >
           <AlignLeft className="w-4 h-4" />
@@ -695,7 +736,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             executeCommand('justifyCenter');
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Align Center"
         >
           <AlignCenter className="w-4 h-4" />
@@ -706,13 +747,13 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             executeCommand('justifyRight');
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Align Right"
         >
           <AlignRight className="w-4 h-4" />
         </button>
 
-        <div className="w-[1px] h-5 bg-[#E5E5E5] mx-1 shrink-0" />
+        <div className="w-[1px] h-5 bg-[#E5E5E5] dark:bg-neutral-800 mx-1 shrink-0" />
 
         {/* Lists: Bullet, Numbered, Roman */}
         <button
@@ -722,7 +763,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             applyBulletList();
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Bullet List"
           aria-label="Bullet List"
         >
@@ -736,7 +777,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             applyNumberedList();
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Numbered List"
           aria-label="Numbered List"
         >
@@ -750,14 +791,14 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             applyRomanList();
           }}
-          className="px-1.5 py-1 text-xs font-serif font-bold text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="px-1.5 py-1 text-xs font-serif font-bold text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Roman Numeral List (I, II, III)"
           aria-label="Roman List"
         >
           I. II.
         </button>
 
-        <div className="w-[1px] h-5 bg-[#E5E5E5] mx-1 shrink-0" />
+        <div className="w-[1px] h-5 bg-[#E5E5E5] dark:bg-neutral-800 mx-1 shrink-0" />
 
         {/* Add Image Inside Content */}
         <button
@@ -765,7 +806,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
           type="button"
           onClick={() => inlineImageInputRef.current?.click()}
           disabled={inlineUploading}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Add Image"
           aria-label="Add Image"
         >
@@ -784,7 +825,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
           id="format-add-link-btn"
           type="button"
           onClick={openLinkDialog}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Add Link"
           aria-label="Add Link"
         >
@@ -797,31 +838,31 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             id="format-spacing-btn"
             type="button"
             onClick={() => setShowSpacingMenu(!showSpacingMenu)}
-            className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+            className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
             title="Vertical Spacing"
           >
             <MoveVertical className="w-4 h-4" />
           </button>
           {showSpacingMenu && (
-            <div className="absolute top-full left-0 mt-1 w-32 bg-white border border-[#E5E5E5] shadow-md py-1 z-30">
+            <div className="absolute top-full left-0 mt-1 w-32 bg-white dark:bg-neutral-900 border border-[#E5E5E5] dark:border-neutral-800 shadow-md py-1 z-30">
               <button
                 type="button"
                 onClick={() => insertSpacing(16, 'Small')}
-                className="w-full text-left px-3 py-1.5 text-xs hover:bg-[#F5F5F5] cursor-pointer"
+                className="w-full text-left px-3 py-1.5 text-xs hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 text-black dark:text-white cursor-pointer"
               >
                 Small Space
               </button>
               <button
                 type="button"
                 onClick={() => insertSpacing(32, 'Medium')}
-                className="w-full text-left px-3 py-1.5 text-xs hover:bg-[#F5F5F5] cursor-pointer"
+                className="w-full text-left px-3 py-1.5 text-xs hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 text-black dark:text-white cursor-pointer"
               >
                 Medium Space
               </button>
               <button
                 type="button"
                 onClick={() => insertSpacing(48, 'Large')}
-                className="w-full text-left px-3 py-1.5 text-xs hover:bg-[#F5F5F5] cursor-pointer"
+                className="w-full text-left px-3 py-1.5 text-xs hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 text-black dark:text-white cursor-pointer"
               >
                 Large Space
               </button>
@@ -829,7 +870,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
           )}
         </div>
 
-        <div className="w-[1px] h-5 bg-[#E5E5E5] mx-1 shrink-0" />
+        <div className="w-[1px] h-5 bg-[#E5E5E5] dark:bg-neutral-800 mx-1 shrink-0" />
 
         {/* Undo / Redo */}
         <button
@@ -839,7 +880,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             executeCommand('undo');
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Undo"
         >
           <Undo className="w-4 h-4" />
@@ -852,7 +893,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
             e.preventDefault();
             executeCommand('redo');
           }}
-          className="p-1.5 text-[#666666] hover:text-black hover:bg-[#F5F5F5] rounded-xs cursor-pointer focus:outline-hidden"
+          className="p-1.5 text-[#666666] dark:text-neutral-300 hover:text-black dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 rounded-xs cursor-pointer focus:outline-hidden"
           title="Redo"
         >
           <Redo className="w-4 h-4" />
@@ -860,13 +901,13 @@ export default function AdminArticleEditor({ articleId, navigate }) {
       </div>
 
       {/* 5. Custom WYSIWYG Writing Canvas */}
-      <div className="min-h-[400px] border border-[#E5E5E5] bg-white p-6 sm:p-8 focus-within:border-black transition-colors">
+      <div className="min-h-[400px] border border-[#E5E5E5] dark:border-neutral-800 bg-white dark:bg-neutral-900/60 p-6 sm:p-8 focus-within:border-black dark:focus-within:border-neutral-500 transition-colors rounded-xs">
         <div
           ref={editorRef}
           id="article-wysiwyg-content"
           contentEditable
           suppressContentEditableWarning
-          className="prose prose-neutral max-w-none min-h-[360px] text-black leading-relaxed focus:outline-hidden text-base sm:text-lg [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:tracking-tight [&>h2]:mt-6 [&>h2]:mb-2 [&>h3]:text-xl [&>h3]:font-bold [&>h3]:mt-4 [&>h3]:mb-2 [&>h4]:text-lg [&>h4]:font-semibold [&>h4]:mt-3 [&>h4]:mb-1 [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-1 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:space-y-1 [&_a]:underline [&_a]:text-black"
+          className="prose prose-neutral dark:prose-invert max-w-none min-h-[360px] text-black dark:text-neutral-100 leading-relaxed focus:outline-hidden text-base sm:text-lg [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:tracking-tight [&>h2]:mt-6 [&>h2]:mb-2 [&>h3]:text-xl [&>h3]:font-bold [&>h3]:mt-4 [&>h3]:mb-2 [&>h4]:text-lg [&>h4]:font-semibold [&>h4]:mt-3 [&>h4]:mb-1 [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-1 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:space-y-1 [&_a]:underline [&_a]:text-black dark:[&_a]:text-white"
         />
       </div>
 
@@ -877,7 +918,8 @@ export default function AdminArticleEditor({ articleId, navigate }) {
           title,
           excerpt: seoData.meta_description,
           content_html: editorRef.current?.innerHTML || '',
-          author
+          author,
+          category
         }}
         seoData={seoData}
         onChange={(updatedSeo) => setSeoData(updatedSeo)}
@@ -890,6 +932,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
         onArticleCreated={(generatedArt) => {
           setTitle(generatedArt.title || '');
           setAuthor(generatedArt.author || 'Trust Agbi');
+          setCategory(generatedArt.category || 'Technology');
           setBannerImage(generatedArt.banner_image || '');
           setStatus('draft');
           setSeoData({
@@ -911,18 +954,18 @@ export default function AdminArticleEditor({ articleId, navigate }) {
 
       {/* Link Insertion Modal */}
       {showLinkDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <form onSubmit={confirmAddLink} className="w-full max-w-sm bg-white p-6 border border-[#E5E5E5] space-y-4">
-            <h4 className="text-sm font-bold text-black">Insert Link</h4>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <form onSubmit={confirmAddLink} className="w-full max-w-sm bg-white dark:bg-neutral-900 p-6 border border-[#E5E5E5] dark:border-neutral-800 space-y-4 rounded-xs">
+            <h4 className="text-sm font-bold text-black dark:text-white">Insert Link</h4>
             <div>
-              <label className="block text-xs text-[#666666] mb-1">URL</label>
+              <label className="block text-xs text-[#666666] dark:text-neutral-400 mb-1">URL</label>
               <input
                 type="url"
                 required
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
                 placeholder="https://example.com"
-                className="w-full p-2 text-sm border border-[#E5E5E5] focus:border-black focus:outline-hidden"
+                className="w-full p-2 text-sm bg-white dark:bg-neutral-950 text-black dark:text-white border border-[#E5E5E5] dark:border-neutral-800 focus:border-black dark:focus:border-white focus:outline-hidden"
                 autoFocus
               />
             </div>
@@ -930,13 +973,13 @@ export default function AdminArticleEditor({ articleId, navigate }) {
               <button
                 type="button"
                 onClick={() => setShowLinkDialog(false)}
-                className="px-3 py-1.5 text-xs text-[#666666] border border-[#E5E5E5] hover:bg-[#F5F5F5] cursor-pointer"
+                className="px-3 py-1.5 text-xs text-[#666666] dark:text-neutral-300 border border-[#E5E5E5] dark:border-neutral-700 hover:bg-[#F5F5F5] dark:hover:bg-neutral-800 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-1.5 text-xs bg-black text-white hover:opacity-90 cursor-pointer"
+                className="px-4 py-1.5 text-xs bg-black dark:bg-white text-white dark:text-black hover:opacity-90 cursor-pointer font-semibold"
               >
                 Add Link
               </button>

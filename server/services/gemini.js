@@ -137,9 +137,9 @@ Return ONLY a valid, parseable JSON object matching this exact schema:
 `;
 
   try {
-    // We use gemini-2.5-flash with googleSearch tool for real-time web research
+    // We use gemini-3.5-flash with googleSearch tool for real-time web research
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.5-flash',
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
@@ -226,7 +226,7 @@ Return ONLY a valid JSON object matching this schema:
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.5-flash',
       contents: prompt,
       config: {
         temperature: 0.3,

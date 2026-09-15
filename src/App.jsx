@@ -63,30 +63,30 @@ export default function App() {
   // Guard admin routes if not authenticated
   if (isAdminRoute && !isAdminAuthenticated) {
     return (
-      <div className="min-h-screen relative flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen relative flex flex-col items-center justify-center p-6 text-center text-black dark:text-white transition-colors">
         {/* Dedicated Admin Auth Cipher Vector Background */}
         <AnimatedVectorBackground
           currentPath={currentPath}
           isAdminAuthenticated={false}
         />
 
-        <div className="w-full max-w-sm p-8 bg-white/90 backdrop-blur-md border border-[#E5E5E5] shadow-2xl space-y-4 text-center relative z-10">
-          <h2 className="text-xl font-bold tracking-tight text-black">Admin Access Required</h2>
-          <p className="text-sm text-[#666666]">
+        <div className="w-full max-w-sm p-8 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-[#E5E5E5] dark:border-neutral-800 shadow-2xl space-y-4 text-center relative z-10 rounded-xs">
+          <h2 className="text-xl font-bold tracking-tight text-black dark:text-white">Admin Access Required</h2>
+          <p className="text-sm text-[#666666] dark:text-neutral-400">
             Please enter your PIN to access the administrative controls.
           </p>
           <div className="pt-2 flex flex-col items-center gap-2 w-full">
             <button
               type="button"
               onClick={() => setAdminPinModalOpen(true)}
-              className="w-full py-2.5 bg-black text-white text-xs font-semibold uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+              className="w-full py-2.5 bg-black dark:bg-white text-white dark:text-black text-xs font-semibold uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer shadow-none rounded-xs"
             >
               Enter PIN
             </button>
             <button
               type="button"
               onClick={() => navigate('/')}
-              className="text-xs text-[#666666] hover:text-black underline underline-offset-4 cursor-pointer pt-2"
+              className="text-xs text-[#666666] dark:text-neutral-400 hover:text-black dark:hover:text-white underline underline-offset-4 cursor-pointer pt-2"
             >
               Return to Blog
             </button>
@@ -103,7 +103,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen relative bg-transparent text-black font-sans flex flex-col selection:bg-black selection:text-white">
+    <div className="min-h-screen relative bg-transparent text-black dark:text-white font-sans flex flex-col selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-200">
       {/* Dynamic Animated Vector Background for each page archetype */}
       <AnimatedVectorBackground
         currentPath={currentPath}

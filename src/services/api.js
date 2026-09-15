@@ -114,6 +114,7 @@ export const api = {
     const searchParams = new URLSearchParams();
     if (params.status) searchParams.set('status', params.status);
     if (params.search) searchParams.set('search', params.search);
+    if (params.category) searchParams.set('category', params.category);
     if (params.limit) searchParams.set('limit', params.limit);
 
     const query = searchParams.toString();
