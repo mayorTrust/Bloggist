@@ -1,7 +1,9 @@
 {
   "name": "Bloggist",
-  "description": "A minimalist editorial blog platform with custom article editor, reactions, comments, and secret admin access.",
-  "requestFramePermissions": [],
+  "description": "A minimalist editorial blog platform with dynamic full-screen interactive hero, AI voice-powered article research & creation, SEO & AIO optimization, and custom vector motion backgrounds.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]

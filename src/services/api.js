@@ -229,5 +229,28 @@ export const api = {
 
   async resolveReport(id) {
     return request(`/api/admin/reports/${id}/resolve`, { method: 'POST' });
+  },
+
+  // Gemini AI Voice Research & Generation
+  async generateArticleWithAi(payload) {
+    return request('/api/admin/ai/generate-article', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  // Optimize Single Article for SEO & AIO
+  async optimizeArticleForSeo(payload) {
+    return request('/api/admin/ai/optimize-article', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  // Bulk Optimize All Articles for SEO & AIO
+  async optimizeAllArticles() {
+    return request('/api/admin/ai/optimize-all', {
+      method: 'POST'
+    });
   }
 };

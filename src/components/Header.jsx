@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import BloggistLogo from './BloggistLogo.jsx';
 
 export default function Header({ currentPath, navigate, onOpenAdminPinModal }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -84,10 +85,10 @@ export default function Header({ currentPath, navigate, onOpenAdminPinModal }) {
             onTouchEnd={() => cancelHold(true)}
             onTouchCancel={() => cancelHold(false)}
             onContextMenu={(e) => e.preventDefault()}
-            className="group text-xl font-bold tracking-tight text-black flex items-center gap-1 cursor-pointer py-1.5 focus:outline-hidden"
-            title="BLOGGIST"
+            className="group flex items-center cursor-pointer py-1 focus:outline-hidden"
+            title="Bloggist"
           >
-            <span>BLOGGIST</span>
+            <BloggistLogo size="md" animated={true} />
           </button>
 
           {/* Discreet indicator visible while holding logo */}

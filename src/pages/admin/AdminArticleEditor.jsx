@@ -21,8 +21,13 @@ import {
   Undo,
   Redo,
   Check,
-  RotateCcw
+  RotateCcw,
+  Sparkles,
+  Mic,
+  Globe
 } from 'lucide-react';
+import AiVoiceCreateModal from '../../components/AiVoiceCreateModal.jsx';
+import SeoAioOptimizationPanel from '../../components/SeoAioOptimizationPanel.jsx';
 
 export default function AdminArticleEditor({ articleId, navigate }) {
   const [title, setTitle] = useState('');
@@ -34,6 +39,20 @@ export default function AdminArticleEditor({ articleId, navigate }) {
   const [error, setError] = useState('');
   const [bannerUploading, setBannerUploading] = useState(false);
   const [inlineUploading, setInlineUploading] = useState(false);
+  const [bannerUrlInput, setBannerUrlInput] = useState('');
+  const [showUrlInput, setShowUrlInput] = useState(false);
+
+  // AI Voice Creation modal state
+  const [aiVoiceModalOpen, setAiVoiceModalOpen] = useState(false);
+
+  // SEO & AIO state
+  const [seoData, setSeoData] = useState({
+    meta_title: '',
+    meta_description: '',
+    keywords: '',
+    aio_summary: '',
+    seo_score: 88
+  });
 
   // Link dialog state
   const [showLinkDialog, setShowLinkDialog] = useState(false);
@@ -72,6 +91,13 @@ export default function AdminArticleEditor({ articleId, navigate }) {
       setAuthor(data.author || 'Trust Agbi');
       setBannerImage(data.banner_image || '');
       setStatus(data.status || 'published');
+      setSeoData({
+        meta_title: data.meta_title || data.title || '',
+        meta_description: data.meta_description || data.excerpt || '',
+        keywords: data.keywords || '',
+        aio_summary: data.aio_summary || '',
+        seo_score: data.seo_score || 88
+      });
       if (editorRef.current) {
         editorRef.current.innerHTML = data.content_html || '<p><br></p>';
       }
@@ -267,7 +293,12 @@ export default function AdminArticleEditor({ articleId, navigate }) {
       author: author.trim(),
       banner_image: bannerImage,
       content_html: contentHtml,
-      status: targetStatus
+      status: targetStatus,
+      meta_title: seoData.meta_title || title.trim(),
+      meta_description: seoData.meta_description || '',
+      keywords: seoData.keywords || '',
+      aio_summary: seoData.aio_summary || '',
+      seo_score: seoData.seo_score || 88
     };
 
     try {
@@ -306,7 +337,20 @@ export default function AdminArticleEditor({ articleId, navigate }) {
           <span>Articles</span>
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* AI Voice Research Button */}
+          <button
+            id="editor-ai-voice-btn"
+            type="button"
+            onClick={() => setAiVoiceModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white text-xs font-semibold hover:bg-black transition-colors cursor-pointer rounded-xs shadow-xs"
+            title="Tell Gemini to research and draft an article"
+          >
+            <Mic className="w-3.5 h-3.5 text-red-400" />
+            <Sparkles className="w-3 h-3 text-amber-300" />
+            <span className="hidden sm:inline">AI Voice Research</span>
+          </button>
+
           <button
             id="save-draft-btn"
             type="button"
@@ -336,16 +380,65 @@ export default function AdminArticleEditor({ articleId, navigate }) {
 
       {/* 1. Banner Image Section */}
       <div className="space-y-2">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-[#666666]">
-          Banner Image
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-[#666666]">
+            Banner Image
+          </label>
+          <div className="flex items-center gap-3 text-xs">
+            <button
+              type="button"
+              onClick={() => setShowUrlInput(!showUrlInput)}
+              className="text-[#666666] hover:text-black underline cursor-pointer"
+            >
+              {showUrlInput ? 'Hide URL input' : 'Paste Image URL'}
+            </button>
+            <button
+              type="button"
+              onClick={() => bannerFileInputRef.current?.click()}
+              className="text-black font-semibold hover:underline cursor-pointer"
+            >
+              Upload File
+            </button>
+          </div>
+        </div>
+
+        {/* Optional direct URL input */}
+        {showUrlInput && (
+          <div className="flex items-center gap-2 p-2 bg-neutral-50 border border-[#E5E5E5] rounded-xs">
+            <input
+              type="url"
+              value={bannerUrlInput}
+              onChange={(e) => setBannerUrlInput(e.target.value)}
+              placeholder="https://images.unsplash.com/photo-..."
+              className="flex-1 px-2.5 py-1.5 text-xs bg-white border border-[#E5E5E5] focus:border-black focus:outline-hidden"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                if (bannerUrlInput.trim()) {
+                  setBannerImage(bannerUrlInput.trim());
+                  setBannerUrlInput('');
+                  setShowUrlInput(false);
+                }
+              }}
+              className="px-3 py-1.5 text-xs bg-black text-white hover:bg-neutral-800 cursor-pointer font-medium"
+            >
+              Apply
+            </button>
+          </div>
+        )}
 
         {bannerImage ? (
-          <div className="relative aspect-[21/9] sm:aspect-[2/1] overflow-hidden bg-[#F5F5F5] border border-[#E5E5E5] group">
+          <div className="relative aspect-[21/9] sm:aspect-[2/1] overflow-hidden bg-[#F5F5F5] border border-[#E5E5E5] group rounded-xs">
             <img
               src={bannerImage}
               alt="Article Banner Preview"
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src =
+                  'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80';
+              }}
             />
             <div className="absolute top-3 right-3 flex items-center gap-2">
               <button
@@ -370,14 +463,14 @@ export default function AdminArticleEditor({ articleId, navigate }) {
           <div
             id="add-banner-image-dropzone"
             onClick={() => bannerFileInputRef.current?.click()}
-            className="aspect-[21/9] sm:aspect-[2/1] border-2 border-dashed border-[#E5E5E5] hover:border-black flex flex-col items-center justify-center cursor-pointer transition-colors bg-[#F5F5F5]/50 group"
+            className="aspect-[21/9] sm:aspect-[2/1] border-2 border-dashed border-[#E5E5E5] hover:border-black flex flex-col items-center justify-center cursor-pointer transition-colors bg-[#F5F5F5]/50 group rounded-xs"
           >
             <Upload className="w-6 h-6 text-[#666666] group-hover:text-black mb-2 transition-colors" />
             <span className="text-sm font-medium text-black">
               {bannerUploading ? 'Uploading banner...' : '＋ Add Banner Image'}
             </span>
             <span className="text-xs text-[#666666] mt-1">
-              JPG, PNG, WEBP or SVG up to 10MB
+              Upload file or click "Paste Image URL" above
             </span>
           </div>
         )}
@@ -776,6 +869,45 @@ export default function AdminArticleEditor({ articleId, navigate }) {
           className="prose prose-neutral max-w-none min-h-[360px] text-black leading-relaxed focus:outline-hidden text-base sm:text-lg [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:tracking-tight [&>h2]:mt-6 [&>h2]:mb-2 [&>h3]:text-xl [&>h3]:font-bold [&>h3]:mt-4 [&>h3]:mb-2 [&>h4]:text-lg [&>h4]:font-semibold [&>h4]:mt-3 [&>h4]:mb-1 [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-1 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:space-y-1 [&_a]:underline [&_a]:text-black"
         />
       </div>
+
+      {/* 6. Comprehensive SEO & AIO Optimization Panel */}
+      <SeoAioOptimizationPanel
+        articleId={articleId}
+        articleData={{
+          title,
+          excerpt: seoData.meta_description,
+          content_html: editorRef.current?.innerHTML || '',
+          author
+        }}
+        seoData={seoData}
+        onChange={(updatedSeo) => setSeoData(updatedSeo)}
+      />
+
+      {/* AI Voice Research Modal */}
+      <AiVoiceCreateModal
+        isOpen={aiVoiceModalOpen}
+        onClose={() => setAiVoiceModalOpen(false)}
+        onArticleCreated={(generatedArt) => {
+          setTitle(generatedArt.title || '');
+          setAuthor(generatedArt.author || 'Trust Agbi');
+          setBannerImage(generatedArt.banner_image || '');
+          setStatus('draft');
+          setSeoData({
+            meta_title: generatedArt.meta_title || generatedArt.title || '',
+            meta_description: generatedArt.meta_description || generatedArt.excerpt || '',
+            keywords: generatedArt.keywords || '',
+            aio_summary: generatedArt.aio_summary || '',
+            seo_score: generatedArt.seo_score || 92
+          });
+          if (editorRef.current) {
+            editorRef.current.innerHTML = generatedArt.content_html || '<p><br></p>';
+          }
+          // If we created a new article in the database, navigate to edit it directly
+          if (generatedArt.id) {
+            navigate(`/admin/articles/edit/${generatedArt.id}`);
+          }
+        }}
+      />
 
       {/* Link Insertion Modal */}
       {showLinkDialog && (

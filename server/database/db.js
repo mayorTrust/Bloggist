@@ -76,6 +76,11 @@ function initSchema() {
       content_html TEXT NOT NULL,
       views INTEGER DEFAULT 0,
       status TEXT DEFAULT 'draft',
+      meta_title TEXT,
+      meta_description TEXT,
+      keywords TEXT,
+      aio_summary TEXT,
+      seo_score INTEGER DEFAULT 88,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -113,6 +118,23 @@ function initSchema() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  // Safe runtime column migration for existing SQLite databases
+  const newCols = [
+    { name: 'meta_title', type: 'TEXT' },
+    { name: 'meta_description', type: 'TEXT' },
+    { name: 'keywords', type: 'TEXT' },
+    { name: 'aio_summary', type: 'TEXT' },
+    { name: 'seo_score', type: 'INTEGER DEFAULT 88' }
+  ];
+  for (const col of newCols) {
+    try {
+      dbInstance.run(`ALTER TABLE articles ADD COLUMN ${col.name} ${col.type}`);
+    } catch (colErr) {
+      // Column exists, ignore
+    }
+  }
+
   saveDatabase();
 }
 

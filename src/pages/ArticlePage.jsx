@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api.js';
 import DOMPurify from 'dompurify';
-import { ArrowLeft, Eye, MoreHorizontal } from 'lucide-react';
+import { ArrowLeft, Eye, MoreHorizontal, Sparkles, Share2, Check, Bot } from 'lucide-react';
 import ReportModal from '../components/ReportModal.jsx';
 import { formatDate, formatRelativeTime } from '../utils/date.js';
 
@@ -56,6 +56,50 @@ export default function ArticlePage({ slug, navigate }) {
       setReactions(data.reactions || {});
       setComments(data.comments || []);
       setLoading(false);
+
+      // Dynamic document title & meta tags update for SEO
+      if (data.title) {
+        document.title = data.meta_title ? `${data.meta_title} | Bloggist` : `${data.title} | Bloggist`;
+      }
+      const metaDescTag = document.querySelector('meta[name="description"]');
+      if (metaDescTag && (data.meta_description || data.excerpt)) {
+        metaDescTag.setAttribute('content', data.meta_description || data.excerpt);
+      }
+
+      // Inject JSON-LD Schema for BlogPosting
+      let scriptTag = document.getElementById('article-jsonld-schema');
+      if (!scriptTag) {
+        scriptTag = document.createElement('script');
+        scriptTag.id = 'article-jsonld-schema';
+        scriptTag.type = 'application/ld+json';
+        document.head.appendChild(scriptTag);
+      }
+      const schemaData = {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: data.title,
+        description: data.meta_description || data.excerpt,
+        image: data.banner_image ? [data.banner_image] : [],
+        datePublished: data.created_at,
+        dateModified: data.updated_at || data.created_at,
+        author: {
+          '@type': 'Person',
+          name: data.author || 'Trust Agbi'
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: 'Bloggist',
+          logo: {
+            '@type': 'ImageObject',
+            url: window.location.origin + '/icon.svg'
+          }
+        },
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': window.location.href
+        }
+      };
+      scriptTag.textContent = JSON.stringify(schemaData);
 
       // Load user's local reaction history for this article
       try {
@@ -218,14 +262,37 @@ export default function ArticlePage({ slug, navigate }) {
         </div>
       </header>
 
-      {/* Large Banner Image */}
+      {/* Large Banner Image with fallback */}
       {article.banner_image && (
-        <div className="w-full overflow-hidden bg-[#F5F5F5] border border-[#E5E5E5] aspect-[21/9] sm:aspect-[2/1]">
+        <div className="w-full overflow-hidden bg-[#F5F5F5] border border-[#E5E5E5] aspect-[21/9] sm:aspect-[2/1] rounded-sm">
           <img
             src={article.banner_image}
             alt={article.title}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src =
+                'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80';
+            }}
           />
+        </div>
+      )}
+
+      {/* AIO (Artificial Intelligence Optimization) Key Takeaways & Direct Answer */}
+      {article.aio_summary && (
+        <div className="p-6 bg-neutral-50/80 border border-neutral-200 rounded-sm space-y-3 shadow-xs">
+          <div className="flex items-center justify-between text-xs font-bold text-black uppercase tracking-wider">
+            <span className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-neutral-800" />
+              <span>AIO Executive Overview & Key Takeaways</span>
+            </span>
+            <span className="text-[10px] font-mono text-neutral-500 bg-neutral-200/60 px-2 py-0.5 rounded-full">
+              Verified Schema
+            </span>
+          </div>
+          <div className="text-sm text-neutral-800 leading-relaxed whitespace-pre-line font-sans pl-3 border-l-2 border-black">
+            {article.aio_summary}
+          </div>
         </div>
       )}
 
@@ -235,10 +302,31 @@ export default function ArticlePage({ slug, navigate }) {
         className="prose prose-neutral max-w-none text-black leading-relaxed space-y-6 text-base sm:text-lg [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:tracking-tight [&>h2]:mt-8 [&>h2]:mb-3 [&>h3]:text-xl [&>h3]:font-bold [&>h3]:mt-6 [&>h3]:mb-2 [&>h4]:text-lg [&>h4]:font-semibold [&>h4]:mt-4 [&>h4]:mb-2 [&>p]:mb-4 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-1.5 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:space-y-1.5 [&_a]:underline [&_a]:underline-offset-4 [&_a]:text-black [&_img]:my-6 [&_img]:border [&_img]:border-[#E5E5E5] [&_img]:max-w-full [&_img]:h-auto"
         dangerouslySetInnerHTML={{
           __html: DOMPurify.sanitize(article.content_html, {
-            ADD_ATTR: ['target', 'rel', 'style', 'class']
+            ADD_ATTR: ['target', 'rel', 'style', 'class', 'onerror']
           })
         }}
       />
+
+      {/* Keywords / SEO Tags */}
+      {article.keywords && (
+        <div className="flex flex-wrap items-center gap-1.5 pt-2">
+          <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mr-1">
+            Keywords:
+          </span>
+          {article.keywords.split(',').map((kw, i) => {
+            const cleanKw = kw.trim();
+            if (!cleanKw) return null;
+            return (
+              <span
+                key={i}
+                className="text-xs px-2.5 py-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-full transition-colors cursor-default"
+              >
+                #{cleanKw}
+              </span>
+            );
+          })}
+        </div>
+      )}
 
       {/* Reactions Section */}
       <section className="pt-8 border-t border-[#E5E5E5] space-y-4">

@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { api } from '../services/api.js';
-import { Eye, Heart } from 'lucide-react';
+import { Eye, Heart, MessageSquare, ArrowUpRight, Search, Sparkles } from 'lucide-react';
 import { formatDate } from '../utils/date.js';
+import HomeHero from '../components/HomeHero.jsx';
 
 export default function HomePage({ navigate }) {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTopic, setSelectedTopic] = useState('All');
 
   useEffect(() => {
     let mounted = true;
@@ -24,7 +27,6 @@ export default function HomePage({ navigate }) {
       } catch (err) {
         console.warn('Initial articles load issue:', err?.message || err);
         if (mounted) {
-          // Automatic quiet retry after 1.2s to smoothly absorb dev server restarts
           retryTimer = setTimeout(async () => {
             if (!mounted) return;
             try {
@@ -67,146 +69,223 @@ export default function HomePage({ navigate }) {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto px-6 py-24 text-center">
-        <p className="text-sm text-[#666666] tracking-wide">Loading...</p>
-      </div>
-    );
-  }
+  // Filtered articles based on search query and topic chip
+  const filteredArticles = useMemo(() => {
+    return articles.filter((art) => {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        (art.title && art.title.toLowerCase().includes(q)) ||
+        (art.excerpt && art.excerpt.toLowerCase().includes(q)) ||
+        (art.author && art.author.toLowerCase().includes(q)) ||
+        (art.keywords && art.keywords.toLowerCase().includes(q));
 
-  if (error) {
-    return (
-      <div className="max-w-4xl mx-auto px-6 py-24 text-center space-y-4">
-        <p className="text-sm text-black">{error}</p>
-        <button
-          type="button"
-          onClick={loadArticles}
-          className="text-xs uppercase tracking-wider font-medium text-black underline underline-offset-4 cursor-pointer"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
+      if (!matchesSearch) return false;
 
-  if (articles.length === 0) {
-    return (
-      <div className="max-w-4xl mx-auto px-6 py-28 text-center">
-        <p className="text-sm text-[#666666]">No articles yet.</p>
-      </div>
-    );
-  }
+      if (selectedTopic === 'All') return true;
 
-  const featured = articles[0];
-  const remaining = articles.slice(1);
+      const fullText = `${art.title} ${art.excerpt || ''} ${art.keywords || ''}`.toLowerCase();
+      if (selectedTopic === 'Technology') {
+        return fullText.includes('tech') || fullText.includes('code') || fullText.includes('silicon') || fullText.includes('quantum') || fullText.includes('ai');
+      }
+      if (selectedTopic === 'Design') {
+        return fullText.includes('design') || fullText.includes('typography') || fullText.includes('architect') || fullText.includes('minimal');
+      }
+      if (selectedTopic === 'Culture') {
+        return fullText.includes('culture') || fullText.includes('human') || fullText.includes('work') || fullText.includes('life');
+      }
+      if (selectedTopic === 'Essays') {
+        return true;
+      }
+      if (selectedTopic === 'AI & Society') {
+        return fullText.includes('ai') || fullText.includes('intelligence') || fullText.includes('machine');
+      }
+
+      return true;
+    });
+  }, [articles, searchQuery, selectedTopic]);
+
+  const featuredArticle = articles[0] || null;
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12 space-y-20">
-      {/* Featured Article */}
-      {featured && (
-        <article
-          id={`featured-article-${featured.id}`}
-          onClick={() => navigate(`/blog/${featured.slug}`)}
-          className="group cursor-pointer space-y-6 block"
-        >
-          {featured.banner_image && (
-            <div className="w-full aspect-[21/9] sm:aspect-[2/1] overflow-hidden bg-[#F5F5F5] border border-[#E5E5E5]">
-              <img
-                src={featured.banner_image}
-                alt={featured.title}
-                className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-300"
-                loading="eager"
-              />
+    <div className="w-full relative flex flex-col">
+      {/* 1. Full-Screen High-Impact Animated Hero Section */}
+      <HomeHero
+        featuredArticle={featuredArticle}
+        selectedTopic={selectedTopic}
+        onTopicSelect={setSelectedTopic}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        navigate={navigate}
+      />
+
+      {/* 2. Latest Articles Section Immediately After Hero */}
+      <section id="latest-articles" className="w-full max-w-6xl mx-auto px-6 py-16 sm:py-24 space-y-12">
+        {/* Section Header */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#E5E5E5] pb-6">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-black font-sans">
+                Latest Articles
+              </h2>
+              <span className="text-xs font-mono font-medium px-2 py-0.5 bg-neutral-100 text-neutral-700 rounded-full">
+                {filteredArticles.length} {filteredArticles.length === 1 ? 'Essay' : 'Essays'}
+              </span>
             </div>
+            <p className="text-xs sm:text-sm text-[#666666]">
+              {selectedTopic !== 'All' ? `Filtered by ${selectedTopic}` : 'Thoughtfully composed perspectives, published without distraction.'}
+            </p>
+          </div>
+
+          {(selectedTopic !== 'All' || searchQuery) && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedTopic('All');
+                setSearchQuery('');
+              }}
+              className="text-xs text-black font-semibold underline underline-offset-4 hover:text-neutral-600 cursor-pointer self-start sm:self-auto"
+            >
+              Reset Filters
+            </button>
           )}
+        </div>
 
-          <div className="space-y-3">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-black group-hover:text-black/80 transition-colors leading-tight">
-              {featured.title}
-            </h1>
+        {/* Loading State */}
+        {loading && (
+          <div className="py-24 text-center space-y-3">
+            <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-xs text-[#666666] uppercase tracking-widest font-mono">Loading Articles...</p>
+          </div>
+        )}
 
-            {featured.excerpt && (
-              <p className="text-base sm:text-lg text-[#666666] leading-relaxed line-clamp-2 max-w-3xl">
-                {featured.excerpt}
+        {/* Error State */}
+        {error && !loading && (
+          <div className="py-24 text-center space-y-4">
+            <p className="text-sm text-black">{error}</p>
+            <button
+              type="button"
+              onClick={loadArticles}
+              className="text-xs uppercase tracking-wider font-semibold text-black underline underline-offset-4 cursor-pointer"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && filteredArticles.length === 0 && (
+          <div className="py-24 text-center space-y-4 bg-neutral-50/60 border border-dashed border-neutral-300 rounded-lg p-8">
+            <Search className="w-8 h-8 text-neutral-400 mx-auto" />
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-black">No articles match your criteria</h3>
+              <p className="text-xs text-[#666666] max-w-sm mx-auto">
+                Try searching for a different keyword or select another topic from the chips above.
               </p>
-            )}
-
-            <div className="flex flex-wrap items-center gap-4 text-xs text-[#666666] pt-1">
-              <span className="font-medium text-black">{featured.author}</span>
-              <span>·</span>
-              <span>{formatDate(featured.created_at)}</span>
-              <span>·</span>
-              <span className="flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5" />
-                {Number(featured.views || 0).toLocaleString()}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Heart className="w-3.5 h-3.5" />
-                {Number(featured.total_reactions || 0).toLocaleString()}
-              </span>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedTopic('All');
+                setSearchQuery('');
+              }}
+              className="px-4 py-2 bg-black text-white text-xs font-semibold rounded-sm hover:bg-neutral-800 transition-colors cursor-pointer"
+            >
+              Show All Articles
+            </button>
           </div>
-        </article>
-      )}
+        )}
 
-      {/* Latest Articles Grid/List */}
-      {remaining.length > 0 && (
-        <section className="space-y-10 pt-6 border-t border-[#E5E5E5]">
-          <h2 className="text-xs uppercase tracking-widest text-[#666666] font-semibold">
-            Latest Articles
-          </h2>
+        {/* Articles Grid */}
+        {!loading && !error && filteredArticles.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
+            {filteredArticles.map((article) => {
+              // Calculate reading time roughly (~200 wpm)
+              const wordCount = (article.content_html || '').replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length;
+              const readMinutes = Math.max(1, Math.round(wordCount / 200));
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {remaining.map((article) => (
-              <article
-                key={article.id}
-                id={`article-card-${article.id}`}
-                onClick={() => navigate(`/blog/${article.slug}`)}
-                className="group cursor-pointer space-y-4 flex flex-col justify-between"
-              >
-                <div className="space-y-4">
-                  {article.banner_image && (
-                    <div className="w-full aspect-[16/9] overflow-hidden bg-[#F5F5F5] border border-[#E5E5E5]">
+              return (
+                <article
+                  key={article.id}
+                  id={`article-card-${article.id}`}
+                  onClick={() => navigate(`/blog/${article.slug}`)}
+                  className="group cursor-pointer flex flex-col justify-between bg-white/80 backdrop-blur-xs border border-[#E5E5E5] hover:border-black transition-all p-5 rounded-lg shadow-xs hover:shadow-md"
+                >
+                  <div className="space-y-4">
+                    {/* Article Banner Image with Error Fallback */}
+                    <div className="w-full aspect-[16/10] overflow-hidden bg-[#F5F5F5] border border-neutral-200/60 rounded-sm relative">
                       <img
-                        src={article.banner_image}
+                        src={
+                          article.banner_image ||
+                          'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80'
+                        }
                         alt={article.title}
-                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src =
+                            'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80';
+                        }}
                       />
+                      {article.seo_score && article.seo_score >= 90 && (
+                        <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/80 text-white backdrop-blur-xs text-[10px] font-bold rounded-full flex items-center gap-1 shadow-xs">
+                          <Sparkles className="w-2.5 h-2.5 text-amber-300" />
+                          <span>AIO Verified</span>
+                        </div>
+                      )}
                     </div>
-                  )}
 
-                  <h3 className="text-xl font-bold tracking-tight text-black group-hover:text-black/80 transition-colors leading-snug line-clamp-2">
-                    {article.title}
-                  </h3>
+                    {/* Metadata Pill */}
+                    <div className="flex items-center gap-2 text-[11px] text-[#666666]">
+                      <span className="font-semibold text-black">{article.author || 'Trust Agbi'}</span>
+                      <span>·</span>
+                      <span>{formatDate(article.created_at)}</span>
+                      <span>·</span>
+                      <span>{readMinutes} min read</span>
+                    </div>
 
-                  {article.excerpt && (
-                    <p className="text-sm text-[#666666] leading-relaxed line-clamp-2">
-                      {article.excerpt}
-                    </p>
-                  )}
-                </div>
+                    {/* Title */}
+                    <h3 className="text-lg font-bold tracking-tight text-black group-hover:text-black/80 transition-colors leading-snug line-clamp-2">
+                      {article.title}
+                    </h3>
 
-                <div className="flex flex-wrap items-center gap-3 text-xs text-[#666666] pt-2">
-                  <span className="font-medium text-black">{article.author}</span>
-                  <span>·</span>
-                  <span>{formatDate(article.created_at)}</span>
-                  <span>·</span>
-                  <span className="flex items-center gap-1">
-                    <Eye className="w-3 h-3" />
-                    {Number(article.views || 0).toLocaleString()}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Heart className="w-3 h-3" />
-                    {Number(article.total_reactions || 0).toLocaleString()}
-                  </span>
-                </div>
-              </article>
-            ))}
+                    {/* Excerpt */}
+                    {article.excerpt && (
+                      <p className="text-xs sm:text-sm text-[#666666] leading-relaxed line-clamp-2">
+                        {article.excerpt}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Footer Metrics */}
+                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-[#E5E5E5] text-xs text-[#666666]">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-3.5 h-3.5" />
+                        {Number(article.views || 0).toLocaleString()}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Heart className="w-3.5 h-3.5" />
+                        {Number(article.total_reactions || 0).toLocaleString()}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        {Number(article.comments_count || 0).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-black font-semibold group-hover:translate-x-0.5 transition-transform text-xs">
+                      <span>Read</span>
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
-        </section>
-      )}
+        )}
+      </section>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { db } from '../database/db.js';
 import { createSessionToken, destroySessionToken, isValidSession, requireAdmin } from '../middleware/auth.js';
+import { generateArticleFromVoice, optimizeArticleForSeoAndAio } from '../services/gemini.js';
 
 const router = express.Router();
 
@@ -239,7 +240,19 @@ router.post('/articles/:id/view', async (req, res) => {
 // POST /api/articles - Create article (Admin only)
 router.post('/articles', requireAdmin, async (req, res) => {
   try {
-    const { title, author, excerpt, banner_image, content_html, status } = req.body;
+    const {
+      title,
+      author,
+      excerpt,
+      banner_image,
+      content_html,
+      status,
+      meta_title,
+      meta_description,
+      keywords,
+      aio_summary,
+      seo_score
+    } = req.body;
 
     if (!title || !title.trim()) {
       return res.status(400).json({ error: 'Article title is required' });
@@ -270,8 +283,10 @@ router.post('/articles', requireAdmin, async (req, res) => {
     }
 
     const result = await db.run(
-      `INSERT INTO articles (title, slug, author, excerpt, banner_image, content_html, views, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
+      `INSERT INTO articles (
+        title, slug, author, excerpt, banner_image, content_html, views, status,
+        meta_title, meta_description, keywords, aio_summary, seo_score, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         title.trim(),
         slug,
@@ -280,6 +295,11 @@ router.post('/articles', requireAdmin, async (req, res) => {
         banner_image || '',
         content_html,
         cleanStatus,
+        meta_title || title.trim(),
+        meta_description || cleanExcerpt,
+        keywords || '',
+        aio_summary || '',
+        seo_score ? parseInt(seo_score, 10) : 88,
         now,
         now
       ]
@@ -306,7 +326,19 @@ router.post('/articles', requireAdmin, async (req, res) => {
 router.put('/articles/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, author, excerpt, banner_image, content_html, status } = req.body;
+    const {
+      title,
+      author,
+      excerpt,
+      banner_image,
+      content_html,
+      status,
+      meta_title,
+      meta_description,
+      keywords,
+      aio_summary,
+      seo_score
+    } = req.body;
 
     const existing = await db.get('SELECT * FROM articles WHERE id = ?', [id]);
     if (!existing) {
@@ -344,6 +376,11 @@ router.put('/articles/:id', requireAdmin, async (req, res) => {
         banner_image = ?,
         content_html = ?,
         status = ?,
+        meta_title = ?,
+        meta_description = ?,
+        keywords = ?,
+        aio_summary = ?,
+        seo_score = ?,
         updated_at = ?
        WHERE id = ?`,
       [
@@ -354,6 +391,11 @@ router.put('/articles/:id', requireAdmin, async (req, res) => {
         banner_image !== undefined ? banner_image : existing.banner_image,
         content_html !== undefined ? content_html : existing.content_html,
         status || existing.status,
+        meta_title !== undefined ? meta_title : existing.meta_title,
+        meta_description !== undefined ? meta_description : existing.meta_description,
+        keywords !== undefined ? keywords : existing.keywords,
+        aio_summary !== undefined ? aio_summary : existing.aio_summary,
+        seo_score !== undefined ? parseInt(seo_score, 10) : existing.seo_score,
         now,
         id
       ]
@@ -648,6 +690,200 @@ router.get('/admin/analytics', requireAdmin, async (req, res) => {
   } catch (err) {
     console.error('Error generating analytics:', err);
     return res.status(500).json({ error: 'Failed to load analytics' });
+  }
+});
+
+// -------------------------------------------------------------
+// 9. GEMINI AI: VOICE RESEARCH, ARTICLE CREATION & SEO/AIO OPTIMIZATION
+// -------------------------------------------------------------
+
+// POST /api/admin/ai/generate-article - Create article from voice research and save as draft
+router.post('/admin/ai/generate-article', requireAdmin, async (req, res) => {
+  try {
+    const { topic, voiceTranscript, tone, preferredLength } = req.body;
+    const promptDescription = (voiceTranscript || topic || '').trim();
+
+    if (!promptDescription) {
+      return res.status(400).json({ error: 'Please provide a topic or speak your idea to create an article.' });
+    }
+
+    // Run Gemini web research & full article generation
+    const generated = await generateArticleFromVoice(promptDescription, { tone, preferredLength });
+
+    // Validate slug uniqueness
+    let slug = generateSlug(generated.title || 'untitled-article');
+    const collision = await db.get('SELECT id FROM articles WHERE slug = ?', [slug]);
+    if (collision) {
+      slug = `${slug}-${Date.now().toString().slice(-4)}`;
+    }
+
+    const now = new Date().toISOString();
+
+    // Auto-save into database as draft
+    const insertResult = await db.run(
+      `INSERT INTO articles (
+        title, slug, author, excerpt, banner_image, content_html, views, status,
+        meta_title, meta_description, keywords, aio_summary, seo_score, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, 0, 'draft', ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        generated.title,
+        slug,
+        generated.author || 'Trust Agbi',
+        generated.excerpt,
+        generated.banner_image,
+        generated.content_html,
+        generated.meta_title || generated.title,
+        generated.meta_description || generated.excerpt,
+        generated.keywords || '',
+        generated.aio_summary || '',
+        generated.seo_score || 92,
+        now,
+        now
+      ]
+    );
+
+    // Initialize reaction counters
+    const reactionTypes = ['love', 'laugh', 'fire', 'surprised', 'sad', 'clap'];
+    for (const rtype of reactionTypes) {
+      await db.run(
+        `INSERT INTO reactions (article_id, reaction_type, count) VALUES (?, ?, 0)`,
+        [insertResult.lastInsertRowid, rtype]
+      );
+    }
+
+    const savedArticle = await db.get('SELECT * FROM articles WHERE id = ?', [insertResult.lastInsertRowid]);
+
+    return res.status(201).json({
+      message: 'Article researched and created by Gemini. Saved as draft.',
+      article: savedArticle
+    });
+  } catch (err) {
+    console.error('Error generating AI article from voice:', err);
+    return res.status(500).json({
+      error: err.message || 'Failed to research and generate article with Gemini.'
+    });
+  }
+});
+
+// POST /api/admin/ai/optimize-article - Optimize a single article for SEO & AIO
+router.post('/admin/ai/optimize-article', requireAdmin, async (req, res) => {
+  try {
+    const { id, title, excerpt, content_html, author } = req.body;
+
+    let targetArticle = null;
+    if (id) {
+      targetArticle = await db.get('SELECT * FROM articles WHERE id = ?', [id]);
+    }
+
+    const articlePayload = {
+      title: title || targetArticle?.title || '',
+      excerpt: excerpt || targetArticle?.excerpt || '',
+      content_html: content_html || targetArticle?.content_html || '',
+      author: author || targetArticle?.author || 'Trust Agbi'
+    };
+
+    if (!articlePayload.title) {
+      return res.status(400).json({ error: 'Article title or content is required for optimization.' });
+    }
+
+    const optimization = await optimizeArticleForSeoAndAio(articlePayload);
+
+    // If this corresponds to an existing saved article, update it in SQLite
+    if (id && targetArticle) {
+      const now = new Date().toISOString();
+      await db.run(
+        `UPDATE articles SET
+          meta_title = ?,
+          meta_description = ?,
+          keywords = ?,
+          aio_summary = ?,
+          seo_score = ?,
+          updated_at = ?
+         WHERE id = ?`,
+        [
+          optimization.meta_title,
+          optimization.meta_description,
+          optimization.keywords,
+          optimization.aio_summary,
+          optimization.seo_score,
+          now,
+          id
+        ]
+      );
+    }
+
+    return res.json({
+      message: 'Article successfully optimized for SEO and AIO.',
+      optimization
+    });
+  } catch (err) {
+    console.error('Error optimizing article for SEO/AIO:', err);
+    return res.status(500).json({
+      error: err.message || 'Failed to optimize article for SEO/AIO.'
+    });
+  }
+});
+
+// POST /api/admin/ai/optimize-all - Optimize all articles in the database for SEO and AIO
+router.post('/admin/ai/optimize-all', requireAdmin, async (req, res) => {
+  try {
+    const articles = await db.all('SELECT * FROM articles');
+    const results = [];
+
+    for (const art of articles) {
+      try {
+        const optimization = await optimizeArticleForSeoAndAio({
+          title: art.title,
+          excerpt: art.excerpt,
+          content_html: art.content_html,
+          author: art.author
+        });
+
+        const now = new Date().toISOString();
+        await db.run(
+          `UPDATE articles SET
+            meta_title = ?,
+            meta_description = ?,
+            keywords = ?,
+            aio_summary = ?,
+            seo_score = ?,
+            updated_at = ?
+           WHERE id = ?`,
+          [
+            optimization.meta_title,
+            optimization.meta_description,
+            optimization.keywords,
+            optimization.aio_summary,
+            optimization.seo_score,
+            now,
+            art.id
+          ]
+        );
+
+        results.push({
+          id: art.id,
+          title: art.title,
+          status: 'success',
+          seo_score: optimization.seo_score
+        });
+      } catch (innerErr) {
+        results.push({
+          id: art.id,
+          title: art.title,
+          status: 'failed',
+          error: innerErr.message
+        });
+      }
+    }
+
+    return res.json({
+      message: `Successfully processed ${results.length} articles for SEO and AIO optimization.`,
+      count: results.length,
+      results
+    });
+  } catch (err) {
+    console.error('Error optimizing all articles:', err);
+    return res.status(500).json({ error: 'Failed to optimize articles.' });
   }
 });
 
