@@ -62,7 +62,7 @@ export default function ContactPage() {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-white px-3.5 py-2.5 text-sm border border-[#E5E5E5] focus:border-black focus:outline-hidden"
+              className="w-full bg-white/85 backdrop-blur-xs px-3.5 py-2.5 text-sm border border-[#E5E5E5]/90 focus:border-black focus:bg-white focus:outline-hidden transition-colors"
               placeholder="Your name"
             />
           </div>
@@ -77,7 +77,7 @@ export default function ContactPage() {
               required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full bg-white px-3.5 py-2.5 text-sm border border-[#E5E5E5] focus:border-black focus:outline-hidden"
+              className="w-full bg-white/85 backdrop-blur-xs px-3.5 py-2.5 text-sm border border-[#E5E5E5]/90 focus:border-black focus:bg-white focus:outline-hidden transition-colors"
               placeholder="name@example.com"
             />
           </div>
@@ -92,7 +92,7 @@ export default function ContactPage() {
               rows={5}
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              className="w-full bg-white px-3.5 py-2.5 text-sm border border-[#E5E5E5] focus:border-black focus:outline-hidden resize-none"
+              className="w-full bg-white/85 backdrop-blur-xs px-3.5 py-2.5 text-sm border border-[#E5E5E5]/90 focus:border-black focus:bg-white focus:outline-hidden resize-none transition-colors"
               placeholder="Write your message..."
             />
           </div>

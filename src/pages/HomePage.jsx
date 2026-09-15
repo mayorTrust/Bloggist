@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api.js';
 import { Eye, Heart } from 'lucide-react';
+import { formatDate } from '../utils/date.js';
 
 export default function HomePage({ navigate }) {
   const [articles, setArticles] = useState([]);
@@ -64,16 +65,6 @@ export default function HomePage({ navigate }) {
       setError('Unable to load articles. Please check your connection.');
       setLoading(false);
     }
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    });
   };
 
   if (loading) {

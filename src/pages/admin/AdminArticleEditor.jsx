@@ -421,7 +421,7 @@ export default function AdminArticleEditor({ articleId, navigate }) {
       {/* 4. Compact WYSIWYG Toolbar */}
       <div
         id="editor-compact-toolbar"
-        className="sticky top-16 z-20 bg-white border border-[#E5E5E5] p-1.5 flex items-center gap-1 overflow-x-auto shadow-xs"
+        className="sticky top-16 z-20 bg-white/85 backdrop-blur-md border border-[#E5E5E5]/90 p-1.5 flex items-center gap-1 overflow-x-auto shadow-sm"
       >
         {/* Bold */}
         <button

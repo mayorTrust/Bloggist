@@ -25,7 +25,7 @@ export default function BottomNav({ currentPath, navigate }) {
       {/* Admin Bottom Navigation Bar */}
       <nav
         id="admin-bottom-nav"
-        className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E5E5E5] h-16 flex items-center justify-around max-w-md mx-auto px-4"
+        className="fixed bottom-0 left-0 right-0 z-40 bg-white/85 backdrop-blur-md border-t border-[#E5E5E5]/80 h-16 flex items-center justify-around max-w-md mx-auto px-4 shadow-sm"
       >
         <button
           id="admin-nav-overview-btn"

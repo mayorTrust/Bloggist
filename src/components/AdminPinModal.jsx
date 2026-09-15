@@ -81,13 +81,13 @@ export default function AdminPinModal({ isOpen, onClose, onSuccess }) {
   return (
     <div
       id="admin-pin-modal-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-xs p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="w-full max-w-sm bg-white p-8 border border-[#E5E5E5] shadow-xs relative select-none"
+        className="w-full max-w-sm bg-white/95 backdrop-blur-md p-8 border border-[#E5E5E5] shadow-2xl relative select-none"
         onKeyDown={handleKeyDown}
         tabIndex={0}
       >

@@ -260,7 +260,7 @@ router.post('/articles', requireAdmin, async (req, res) => {
     }
 
     const cleanStatus = status === 'draft' ? 'draft' : 'published';
-    const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+    const now = new Date().toISOString();
 
     // Auto-generate excerpt if not supplied
     let cleanExcerpt = excerpt ? excerpt.trim() : '';
@@ -333,7 +333,7 @@ router.put('/articles/:id', requireAdmin, async (req, res) => {
       cleanExcerpt = stripped.slice(0, 160) + (stripped.length > 160 ? '...' : '');
     }
 
-    const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+    const now = new Date().toISOString();
 
     await db.run(
       `UPDATE articles SET
@@ -498,7 +498,7 @@ router.post('/articles/:id/comments', async (req, res) => {
 
     const cleanName = name.trim().slice(0, 60);
     const cleanContent = content.trim().slice(0, 1000);
-    const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+    const now = new Date().toISOString();
 
     const result = await db.run(
       'INSERT INTO comments (article_id, name, content, created_at) VALUES (?, ?, ?, ?)',
@@ -527,7 +527,7 @@ router.post('/articles/:id/report', async (req, res) => {
     }
 
     const cleanReason = reason.trim().slice(0, 500);
-    const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+    const now = new Date().toISOString();
 
     await db.run(
       'INSERT INTO reports (article_id, reason, created_at, resolved) VALUES (?, ?, ?, 0)',
@@ -583,7 +583,7 @@ router.post('/contact', async (req, res) => {
       return res.status(400).json({ error: 'Message cannot be empty' });
     }
 
-    const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+    const now = new Date().toISOString();
     await db.run(
       'INSERT INTO contact_messages (name, email, message, created_at) VALUES (?, ?, ?, ?)',
       [name.trim().slice(0, 100), email.trim().slice(0, 120), message.trim().slice(0, 2000), now]

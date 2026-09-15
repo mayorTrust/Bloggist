@@ -2,5 +2,7 @@
   "name": "Bloggist",
   "description": "A minimalist editorial blog platform with custom article editor, reactions, comments, and secret admin access.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

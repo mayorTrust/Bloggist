@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api.js';
 import { LogOut, ExternalLink, Check, Eye } from 'lucide-react';
+import { formatRelativeTime } from '../../utils/date.js';
 
 export default function AdminOverview({ navigate, onLogout }) {
   const [analytics, setAnalytics] = useState(null);
@@ -100,7 +101,7 @@ export default function AdminOverview({ navigate, onLogout }) {
 
       {/* Analytics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-6 border border-[#E5E5E5] bg-white space-y-2">
+        <div className="p-6 border border-[#E5E5E5]/90 bg-white/85 backdrop-blur-md shadow-xs space-y-2">
           <p className="text-xs uppercase tracking-widest text-[#666666] font-semibold">
             Total Views
           </p>
@@ -109,7 +110,7 @@ export default function AdminOverview({ navigate, onLogout }) {
           </p>
         </div>
 
-        <div className="p-6 border border-[#E5E5E5] bg-white space-y-2">
+        <div className="p-6 border border-[#E5E5E5]/90 bg-white/85 backdrop-blur-md shadow-xs space-y-2">
           <p className="text-xs uppercase tracking-widest text-[#666666] font-semibold">
             Articles
           </p>
@@ -118,7 +119,7 @@ export default function AdminOverview({ navigate, onLogout }) {
           </p>
         </div>
 
-        <div className="p-6 border border-[#E5E5E5] bg-white space-y-2">
+        <div className="p-6 border border-[#E5E5E5]/90 bg-white/85 backdrop-blur-md shadow-xs space-y-2">
           <p className="text-xs uppercase tracking-widest text-[#666666] font-semibold">
             Comments
           </p>
@@ -134,12 +135,12 @@ export default function AdminOverview({ navigate, onLogout }) {
           Most Viewed
         </h2>
         {analytics.mostViewed && analytics.mostViewed.length > 0 ? (
-          <div className="border border-[#E5E5E5] divide-y divide-[#E5E5E5] bg-white">
+          <div className="border border-[#E5E5E5]/90 divide-y divide-[#E5E5E5]/80 bg-white/85 backdrop-blur-md shadow-xs">
             {analytics.mostViewed.map((item) => (
               <div
                 key={item.id}
                 onClick={() => navigate(`/admin/articles/edit/${item.id}`)}
-                className="flex items-center justify-between p-4 hover:bg-[#F5F5F5] transition-colors cursor-pointer"
+                className="flex items-center justify-between p-4 hover:bg-black/5 transition-colors cursor-pointer"
               >
                 <div className="pr-4">
                   <p className="text-sm font-semibold text-black line-clamp-1">
@@ -167,12 +168,15 @@ export default function AdminOverview({ navigate, onLogout }) {
           Recent Comments
         </h2>
         {analytics.recentComments && analytics.recentComments.length > 0 ? (
-          <div className="border border-[#E5E5E5] divide-y divide-[#E5E5E5] bg-white">
+          <div className="border border-[#E5E5E5]/90 divide-y divide-[#E5E5E5]/80 bg-white/85 backdrop-blur-md shadow-xs">
             {analytics.recentComments.map((c) => (
               <div key={c.id} className="p-4 space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold text-black">{c.name}</span>
-                  <span className="text-[#666666]">{c.article_title || 'Article'}</span>
+                  <span className="text-[#666666] flex items-center gap-1.5">
+                    <span className="line-clamp-1">{c.article_title || 'Article'}</span>
+                    {c.created_at && <span className="shrink-0 font-normal">· {formatRelativeTime(c.created_at)}</span>}
+                  </span>
                 </div>
                 <p className="text-xs sm:text-sm text-[#666666] line-clamp-2">
                   "{c.content}"
@@ -191,7 +195,7 @@ export default function AdminOverview({ navigate, onLogout }) {
           Reported Articles
         </h2>
         {analytics.reports && analytics.reports.length > 0 ? (
-          <div className="border border-[#E5E5E5] divide-y divide-[#E5E5E5] bg-white">
+          <div className="border border-[#E5E5E5]/90 divide-y divide-[#E5E5E5]/80 bg-white/85 backdrop-blur-md shadow-xs">
             {analytics.reports.map((rep) => (
               <div key={rep.id} className="p-4 flex items-center justify-between gap-4">
                 <div className="space-y-1">
@@ -215,7 +219,7 @@ export default function AdminOverview({ navigate, onLogout }) {
             ))}
           </div>
         ) : (
-          <div className="p-6 border border-[#E5E5E5] bg-white text-center">
+          <div className="p-6 border border-[#E5E5E5]/90 bg-white/85 backdrop-blur-md shadow-xs text-center">
             <p className="text-sm text-[#666666]">No reported articles</p>
           </div>
         )}

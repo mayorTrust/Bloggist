@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from './components/Header.jsx';
 import AdminPinModal from './components/AdminPinModal.jsx';
 import BottomNav from './components/BottomNav.jsx';
+import AnimatedVectorBackground from './components/AnimatedVectorBackground.jsx';
 import HomePage from './pages/HomePage.jsx';
 import ArticlePage from './pages/ArticlePage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
@@ -62,25 +63,35 @@ export default function App() {
   // Guard admin routes if not authenticated
   if (isAdminRoute && !isAdminAuthenticated) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center space-y-4">
-        <h2 className="text-xl font-bold tracking-tight text-black">Admin Access Required</h2>
-        <p className="text-sm text-[#666666]">
-          Please enter your PIN to access the administrative controls.
-        </p>
-        <button
-          type="button"
-          onClick={() => setAdminPinModalOpen(true)}
-          className="px-5 py-2.5 bg-black text-white text-xs font-semibold uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer"
-        >
-          Enter PIN
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="text-xs text-[#666666] hover:text-black underline underline-offset-4 cursor-pointer pt-2"
-        >
-          Return to Blog
-        </button>
+      <div className="min-h-screen relative flex flex-col items-center justify-center p-6 text-center">
+        {/* Dedicated Admin Auth Cipher Vector Background */}
+        <AnimatedVectorBackground
+          currentPath={currentPath}
+          isAdminAuthenticated={false}
+        />
+
+        <div className="w-full max-w-sm p-8 bg-white/90 backdrop-blur-md border border-[#E5E5E5] shadow-2xl space-y-4 text-center relative z-10">
+          <h2 className="text-xl font-bold tracking-tight text-black">Admin Access Required</h2>
+          <p className="text-sm text-[#666666]">
+            Please enter your PIN to access the administrative controls.
+          </p>
+          <div className="pt-2 flex flex-col items-center gap-2 w-full">
+            <button
+              type="button"
+              onClick={() => setAdminPinModalOpen(true)}
+              className="w-full py-2.5 bg-black text-white text-xs font-semibold uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+            >
+              Enter PIN
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="text-xs text-[#666666] hover:text-black underline underline-offset-4 cursor-pointer pt-2"
+            >
+              Return to Blog
+            </button>
+          </div>
+        </div>
 
         <AdminPinModal
           isOpen={adminPinModalOpen}
@@ -92,7 +103,13 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans flex flex-col selection:bg-black selection:text-white">
+    <div className="min-h-screen relative bg-transparent text-black font-sans flex flex-col selection:bg-black selection:text-white">
+      {/* Dynamic Animated Vector Background for each page archetype */}
+      <AnimatedVectorBackground
+        currentPath={currentPath}
+        isAdminAuthenticated={isAdminAuthenticated}
+      />
+
       {/* Show public header on non-admin routes */}
       {!isAdminRoute && (
         <Header
@@ -103,7 +120,7 @@ export default function App() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1">
+      <main className="flex-1 relative z-10">
         {/* Public Routes */}
         {currentPath === '/' && <HomePage navigate={navigate} />}
 

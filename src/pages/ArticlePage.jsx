@@ -3,6 +3,7 @@ import { api } from '../services/api.js';
 import DOMPurify from 'dompurify';
 import { ArrowLeft, Eye, MoreHorizontal } from 'lucide-react';
 import ReportModal from '../components/ReportModal.jsx';
+import { formatDate, formatRelativeTime } from '../utils/date.js';
 
 const REACTION_EMOJIS = [
   { type: 'love', emoji: '❤️' },
@@ -31,6 +32,15 @@ export default function ArticlePage({ slug, navigate }) {
 
   // Report modal state
   const [reportModalOpen, setReportModalOpen] = useState(false);
+
+  // Live ticking timer to update relative comment times in real-time
+  const [, setLiveTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLiveTick((t) => t + 1);
+    }, 15000); // Ticks every 15s to update "just now", "1 minute ago", etc.
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     loadArticle();
@@ -127,6 +137,9 @@ export default function ArticlePage({ slug, navigate }) {
         name: commentName.trim(),
         content: commentText.trim()
       });
+      if (newComment && !newComment.created_at) {
+        newComment.created_at = new Date().toISOString();
+      }
       setComments((prev) => [newComment, ...prev]);
       setCommentText('');
       setCommentLoading(false);
@@ -134,32 +147,6 @@ export default function ArticlePage({ slug, navigate }) {
       setCommentLoading(false);
       setCommentError(err.message || 'Failed to post comment');
     }
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  const formatRelativeTime = (dateStr) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    const now = new Date();
-    const diffSecs = Math.floor((now - d) / 1000);
-
-    if (diffSecs < 60) return 'just now';
-    const diffMins = Math.floor(diffSecs / 60);
-    if (diffMins < 60) return `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays < 30) return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
-    return formatDate(dateStr);
   };
 
   if (loading) {
@@ -270,8 +257,8 @@ export default function ArticlePage({ slug, navigate }) {
                 onClick={() => handleReaction(type)}
                 className={`inline-flex items-center gap-2 px-3.5 py-1.5 text-sm border rounded-full transition-all cursor-pointer focus:outline-hidden ${
                   isSelected
-                    ? 'border-black bg-black text-white'
-                    : 'border-[#E5E5E5] bg-white text-black hover:border-black'
+                    ? 'border-black bg-black text-white shadow-xs'
+                    : 'border-[#E5E5E5]/90 bg-white/80 backdrop-blur-xs text-black hover:border-black'
                 }`}
                 title={`React with ${type}`}
               >
@@ -284,7 +271,7 @@ export default function ArticlePage({ slug, navigate }) {
       </section>
 
       {/* Comments Section */}
-      <section className="pt-8 border-t border-[#E5E5E5] space-y-8">
+      <section className="pt-8 border-t border-[#E5E5E5]/80 space-y-8">
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-bold tracking-tight text-black">
             Comments {comments.length > 0 && `(${comments.length})`}
@@ -292,7 +279,7 @@ export default function ArticlePage({ slug, navigate }) {
         </div>
 
         {/* Comment Form */}
-        <form onSubmit={handleCommentSubmit} className="space-y-3 bg-[#F5F5F5] p-5 border border-[#E5E5E5]">
+        <form onSubmit={handleCommentSubmit} className="space-y-3 bg-white/80 backdrop-blur-md p-5 border border-[#E5E5E5]/90 shadow-xs">
           <div>
             <input
               id="comment-name-input"

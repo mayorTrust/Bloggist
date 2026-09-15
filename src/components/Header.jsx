@@ -70,7 +70,7 @@ export default function Header({ currentPath, navigate, onOpenAdminPinModal }) {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-[#E5E5E5]">
+    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-[#E5E5E5]/80 transition-colors">
       <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Clickable and Press-and-Hold BLOGGIST Logo */}
         <div className="relative select-none">
@@ -137,7 +137,7 @@ export default function Header({ currentPath, navigate, onOpenAdminPinModal }) {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[#E5E5E5] bg-white px-6 py-4 space-y-3">
+        <div className="md:hidden border-t border-[#E5E5E5]/80 bg-white/90 backdrop-blur-md px-6 py-4 space-y-3">
           {navLinks.map((link) => {
             const isActive = currentPath === link.path;
             return (
